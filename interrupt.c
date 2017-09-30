@@ -11,7 +11,10 @@
 
 Gate idt[IDT_ENTRIES];
 Register    idtR;
+
+// Declaracions:
 void keyboard_handler();
+void system_call_handler();
 
 char char_map[] =
 {
@@ -85,6 +88,7 @@ void setIdt()
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
   setInterruptHandler(33,keyboard_handler,0);
+  setTrapHandler(0x80, system_call_handler, 3);
 
   set_idt_reg(&idtR);
 }
@@ -100,6 +104,9 @@ void keyboard_routine(){
     char c = 'C';
     if(valNum < 98){
       c = char_map[valNum];
+    }
+    if( c == '\0'){
+      c = 'C';
     }
     printc_xy(0,0,c);
   }

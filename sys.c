@@ -13,6 +13,8 @@
 
 #include <sched.h>
 
+// #include <errno.h>
+
 #define LECTURA 0
 #define ESCRIPTURA 1
 
@@ -44,4 +46,27 @@ int sys_fork()
 
 void sys_exit()
 {  
+}
+
+int sys_write(int fd, char * buffer, int size) {
+  /*fd: file descriptor. In this delivery it must always be 1.
+buffer: pointer to the bytes.
+size: number of bytes.
+return ’ Negative number in case of error (specifying the kind of error) and
+the number of bytes written if OK.
+  */
+
+  //checking the parameters
+  int check = check_fd(fd,ESCRIPTURA);
+  if(check != 0){
+    return check;
+  }
+  if(buffer == NULL){
+    // TODO: Error!
+  }
+  if(size < 0){
+    //TODO: Error!
+  }
+
+
 }
