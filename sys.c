@@ -67,6 +67,7 @@ the number of bytes written if OK.
   if(size < 0){
     //TODO: Error!
   }
-
+  //TODO: copy the data from/to the user address space if needed
+  return sys_write_console(buffer,size);
 
 }
