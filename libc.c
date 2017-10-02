@@ -8,6 +8,22 @@
 
 int errno;
 
+int write(int fd, char *buffer, int size){
+  int ret = 0;
+  __asm__ __volatile__ (
+    // "movl %1, %%ebx;"
+    // "movl %2, %%ecx;"
+    // "movl %3, %%edx;"
+    "movl $4, %%eax;"
+    "int $0x80;"
+    : "=r"(ret)
+    : "b"(fd), "c"(buffer), "d"(size)
+    : "%eax"
+  );
+  //TODO: ebx, ecx , edx no se toquen durante la ejecucion
+  return 0;
+}
+
 void itoa(int a, char *b)
 {
   int i, i1;

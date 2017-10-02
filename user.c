@@ -49,7 +49,7 @@ int __attribute__ ((__section__(".text.main")))
     // count = 75;
     // acum = 0;
 	// acum = outer(count);
-	
+	write(1, "Hola", 4);
   while(1) { }
   	return 0;
 }
