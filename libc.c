@@ -8,6 +8,19 @@
 
 int errno;
 
+void perror() {
+	switch (errno) {
+		case EFAULT:
+			write(1,"Invalid address         \n",20);
+			break;
+		case EINVAL:
+			write(1,"Invalid argument        \n",20);
+			break;
+		default:
+			write(1,"Invalid error code      \n",20);
+	}
+}
+
 int write(int fd, char *buffer, int size){
   int ret = 0;
   __asm__ __volatile__ (
@@ -21,6 +34,11 @@ int write(int fd, char *buffer, int size){
     : "%eax"
   );
   //TODO: ebx, ecx , edx no se toquen durante la ejecucion
+  if (ret < 0) {
+  	errno = -ret;
+  	return -1;
+  }
+  errno = 0;
   return ret;
 }
 

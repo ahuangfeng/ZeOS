@@ -65,11 +65,14 @@ the number of bytes written if OK.
   }
   if(buffer == NULL){
     // TODO: Error!
+    return -14; // Bad Adress
   }
   if(size < 0){
     //TODO: Error!
+    return -22: // Invalid Argument
   }
   //TODO: copy the data from/to the user address space if needed
+  
   return sys_write_console(buffer,size);
 
 }
