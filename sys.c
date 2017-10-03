@@ -13,6 +13,8 @@
 
 #include <sched.h>
 
+#include <declaracions.h>
+
 // #include <errno.h>
 
 #define LECTURA 0
@@ -70,4 +72,8 @@ the number of bytes written if OK.
   //TODO: copy the data from/to the user address space if needed
   return sys_write_console(buffer,size);
 
+}
+
+int sys_gettime(){
+  return zeos_ticks;
 }

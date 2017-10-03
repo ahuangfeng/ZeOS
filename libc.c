@@ -16,12 +16,24 @@ int write(int fd, char *buffer, int size){
     // "movl %3, %%edx;"
     "movl $4, %%eax;"
     "int $0x80;"
-    : "=r"(ret)
-    : "b"(fd), "c"(buffer), "d"(size)
+    : "=r"(ret) //operand = for write only => pone el valor output en ret
+    : "b"(fd), "c"(buffer), "d"(size) //b for ebx, c for ecx, d for edx
     : "%eax"
   );
   //TODO: ebx, ecx , edx no se toquen durante la ejecucion
   return ret;
+}
+
+long long int gettime(){
+  long long int result = 0;
+  __asm__ __volatile__(
+    "movl $10, %%eax;"
+    "int $0x80;"
+    : "=r"(result)
+    :
+    : "%eax"
+  );
+  return result;
 }
 
 void itoa(int a, char *b)

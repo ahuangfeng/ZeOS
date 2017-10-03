@@ -8,6 +8,22 @@ ENTRY (sys_call_table)
 	.long sys_ni_syscall // 2
 	.long sys_ni_syscall // 3
 	.long sys_write // 4
+	.long sys_ni_syscall // 5
+	.long sys_ni_syscall 
+	.long sys_ni_syscall 
+	.long sys_ni_syscall 
+	.long sys_ni_syscall 
+	.long sys_gettime // 10
+	.long sys_ni_syscall 
+	.long sys_ni_syscall 
+	.long sys_ni_syscall 
+	.long sys_ni_syscall 
+	.long sys_ni_syscall // 15
+	.long sys_ni_syscall 
+	.long sys_ni_syscall 
+	.long sys_ni_syscall 
+	.long sys_ni_syscall 
+	.long sys_ni_syscall // 20
 .globl MAX_SYSCALL
-MAX_SYSCALL = (. - sys_call_table)/4
+MAX_SYSCALL = (. - sys_call_table)/20
 

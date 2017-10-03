@@ -50,6 +50,17 @@ int __attribute__ ((__section__(".text.main")))
     // acum = 0;
 	// acum = outer(count);
 	write(1, "Hola", 4);
-  while(1) { }
+//   while(1) { }
+	volatile int i = 0;
+	while(i<20000){
+		i++;
+	}
+	volatile int o = gettime();
+	if(o > 0){
+		write(1,"Hola23332->",11);
+		//TODO: porque no funciona? lo de abajo?
+		write(1,o+"",20);
+	}
+
   	return 0;
 }
