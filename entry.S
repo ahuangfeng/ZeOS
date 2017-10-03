@@ -77,6 +77,13 @@ ENTRY(keyboard_handler);
       RESTORE_ALL;
       IRET;
 
+ENTRY(clock_handler);
+      SAVE_ALL;
+      EOI;
+      CALL clock_routine;
+      RESTORE_ALL;
+      IRET;
+
 ENTRY(system_call_handler)
 	SAVE_ALL 					//Save the current context
 	cmpl $0, %eax  				//Is syscall number negative?

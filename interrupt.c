@@ -9,12 +9,15 @@
 
 #include <zeos_interrupt.h>
 
+#include <declaracions.h>
+
 Gate idt[IDT_ENTRIES];
 Register    idtR;
 
 // Declaracions:
-void keyboard_handler();
-void system_call_handler();
+// void keyboard_handler();
+// void clock_handler();
+// void system_call_handler();
 
 char char_map[] =
 {
@@ -88,10 +91,12 @@ void setIdt()
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
   setInterruptHandler(33,keyboard_handler,0);
+  setInterruptHandler(32,clock_handler,0);
   setTrapHandler(0x80, system_call_handler, 3);
 
   set_idt_reg(&idtR);
 }
+
 
 void keyboard_routine(){
   unsigned char num = inb(0x60);
@@ -112,3 +117,6 @@ void keyboard_routine(){
   }
 }
 
+void clock_routine(){
+  zeos_show_clock();
+}

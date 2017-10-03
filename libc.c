@@ -21,7 +21,7 @@ int write(int fd, char *buffer, int size){
     : "%eax"
   );
   //TODO: ebx, ecx , edx no se toquen durante la ejecucion
-  return 0;
+  return ret;
 }
 
 void itoa(int a, char *b)
