@@ -15,7 +15,9 @@
 
 #include <declaracions.h>
 
-// #include <errno.h>
+#include <libc.h>
+
+#include <errno.h>
 
 #define LECTURA 0
 #define ESCRIPTURA 1
@@ -58,22 +60,32 @@ return ’ Negative number in case of error (specifying the kind of error) and
 the number of bytes written if OK.
   */
 
+  char buff[8];
+
   //checking the parameters
   int check = check_fd(fd,ESCRIPTURA);
   if(check != 0){
     return check;
   }
   if(buffer == NULL){
-    // TODO: Error!
-    return -14; // Bad Adress
+    return -EFAULT; // Bad Adress
   }
   if(size < 0){
-    //TODO: Error!
-    return -22: // Invalid Argument
+    return -EINVAL; // Invalid Argument
   }
-  //TODO: copy the data from/to the user address space if needed
   
-  return sys_write_console(buffer,size);
+  int res = 0;
+  while(size>8){
+    copy_from_user(buffer, buff, size);
+    sys_write_console(buff,8);
+    size-=8;
+    buffer+=8;
+  }
+  if(size>0){
+    copy_from_user(buffer, buff, size);
+    sys_write_console(buff,size);
+  }
+  return res;
 
 }
 

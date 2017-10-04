@@ -6,14 +6,19 @@
 
 #include <types.h>
 
+#include <errno.h>
+
 int errno;
 
 void perror() {
 	switch (errno) {
-		case EFAULT:
+    case 0:
+      write(1,"No error\n",9);
+      break;
+		case EFAULT: //14
 			write(1,"Invalid address         \n",20);
 			break;
-		case EINVAL:
+		case EINVAL: //22
 			write(1,"Invalid argument        \n",20);
 			break;
 		default:
@@ -31,7 +36,7 @@ int write(int fd, char *buffer, int size){
     "int $0x80;"
     : "=r"(ret) //operand = for write only => pone el valor output en ret
     : "b"(fd), "c"(buffer), "d"(size) //b for ebx, c for ecx, d for edx
-    : "%eax"
+    : 
   );
   //TODO: ebx, ecx , edx no se toquen durante la ejecucion
   if (ret < 0) {
