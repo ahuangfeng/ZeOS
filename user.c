@@ -49,17 +49,16 @@ int __attribute__ ((__section__(".text.main")))
     // count = 75;
     // acum = 0;
 	// acum = outer(count);
-	write(1, 0, 4);
+	write(1, " HOLA que tal ?", 15);
 	perror();
 	volatile int i = 0;
-	//TODO: optimizacion?
-	while(i<20000000){
+	while(i<2000){
 		i++;
 	}
 	volatile int o = gettime();
 	char * str = "";
 	if(o > 0){
-		write(1,"->",2);
+		write(1,"gettime->",9);
 		itoa(o,str);
 		write(1,str,strlen(str));
 	}

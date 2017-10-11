@@ -15,7 +15,9 @@ union task_union protected_tasks[NR_TASKS+2]
 
 union task_union *task = &protected_tasks[1]; /* == union task_union task[NR_TASKS] */
 
-#if 0
+struct task_struct *idle_task;
+
+#if 1 
 struct task_struct *list_head_to_task_struct(struct list_head *l)
 {
   return list_entry( l, struct task_struct, list);
@@ -61,7 +63,17 @@ void cpu_idle(void)
 
 void init_idle (void)
 {
+	struct list_head * aux_freequeue = freequeue.next;
+	struct task_struct * structura = list_head_to_task_struct(&freequeue);
+	list_del(&freequeue);
 
+	structura->PID = 0;
+	allocate_DIR(structura);
+	task_switch((union task_union *) structura);
+
+
+	idle_task = structura;
+	freequeue = *aux_freequeue;
 }
 
 void init_task1(void)
@@ -70,7 +82,20 @@ void init_task1(void)
 
 
 void init_sched(){
+	INIT_LIST_HEAD(&freequeue);
+	struct list_head * aux;
+	aux = &freequeue;
+	union task_union * aux_task = task;
+	for(int i = 0; i<NR_TASKS; i++){
+		struct list_head lista;
+		INIT_LIST_HEAD(&lista);
+		list_add_tail(&lista,aux);
+		aux_task->task.list = &lista;
+		aux_task++;
+		aux = aux->next;
+	}
 
+	INIT_LIST_HEAD(&readyqueue);
 }
 
 struct task_struct* current()

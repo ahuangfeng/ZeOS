@@ -60,7 +60,7 @@ return ’ Negative number in case of error (specifying the kind of error) and
 the number of bytes written if OK.
   */
 
-  char buff[8];
+  char buff[4];
 
   //checking the parameters
   int check = check_fd(fd,ESCRIPTURA);
@@ -75,11 +75,11 @@ the number of bytes written if OK.
   }
   
   int res = 0;
-  while(size>8){
-    copy_from_user(buffer, buff, size);
-    sys_write_console(buff,8);
-    size-=8;
-    buffer+=8;
+  while(size>4){  //TODO: poner constantes 4
+    copy_from_user(buffer, buff, 4);
+    sys_write_console(buff,4);
+    size-=4;
+    buffer+=4;
   }
   if(size>0){
     copy_from_user(buffer, buff, size);

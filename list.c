@@ -25,6 +25,11 @@ static inline void __list_add(struct list_head *new,
 	prev->next = new;
 }
 
+// struct list_head * pop_head(struct list_head * head){
+// 	struct list_head * resultat = head;
+// 	head = head->next;
+// }
+
 /**
  * list_add - add a new entry
  * @new: new entry to be added
