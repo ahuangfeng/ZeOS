@@ -22,6 +22,8 @@
 #define LECTURA 0
 #define ESCRIPTURA 1
 
+#define TAMANYBUFF 4
+
 int check_fd(int fd, int permissions)
 {
   if (fd!=1) return -9; /*EBADF*/
@@ -60,7 +62,7 @@ return ’ Negative number in case of error (specifying the kind of error) and
 the number of bytes written if OK.
   */
 
-  char buff[4];
+  char buff[TAMANYBUFF];
 
   //checking the parameters
   int check = check_fd(fd,ESCRIPTURA);
@@ -75,11 +77,11 @@ the number of bytes written if OK.
   }
   
   int res = 0;
-  while(size>4){  //TODO: poner constantes 4
-    copy_from_user(buffer, buff, 4);
-    sys_write_console(buff,4);
-    size-=4;
-    buffer+=4;
+  while(size>TAMANYBUFF){  // TAMANYBUFF = 4
+    copy_from_user(buffer, buff, TAMANYBUFF);
+    sys_write_console(buff, TAMANYBUFF);
+    size -= TAMANYBUFF;
+    buffer += TAMANYBUFF;
   }
   if(size>0){
     copy_from_user(buffer, buff, size);
