@@ -54,7 +54,7 @@ int allocate_DIR(struct task_struct *t)
 void cpu_idle(void)
 {
 	__asm__ __volatile__("sti": : :"memory");
-
+	printk("cpu_idle!\n");
 	while(1)
 	{
 	;
@@ -63,37 +63,98 @@ void cpu_idle(void)
 
 void init_idle (void)
 {
-	struct list_head * aux_freequeue = freequeue.next;
-	struct task_struct * structura = list_head_to_task_struct(&freequeue);
-	list_del(&freequeue);
-
+	struct list_head * first_freequeue = list_first( &freequeue );
+	struct task_struct * structura = list_head_to_task_struct(first_freequeue);
+	list_del(first_freequeue); 
+	printk("\ninit_idle");
+	// freequeue = *first_freequeue;
+	
 	structura->PID = 0;
 	allocate_DIR(structura);
-	task_switch((union task_union *) structura);
-
-
+	//TODO: porque task_switch? lo ejecutaremos despues
+	// task_switch((union task_union *) structura);
+	union task_union * tku = (union task_union *) structura;
+	tku->stack[KERNEL_STACK_SIZE-1] = ( unsigned long) &cpu_idle; 
+	tku->stack[KERNEL_STACK_SIZE-2] = 0;
+	structura->proces_esp = &(tku->stack[KERNEL_STACK_SIZE-2]);
 	idle_task = structura;
-	freequeue = *aux_freequeue;
+}
+
+void task_switch(union task_union * new){
+	// printk("task swiitch\n"); //TODO: no lo vemos
+	__asm__ __volatile__(
+		"pushl %%esi;"
+		"pushl %%edi;"
+		"pushl %%ebx;"
+		"pushl %%eax;" 
+		"call inner_task_switch;"
+		"popl %%eax;"
+		"popl %%ebx;"
+		"popl %%edi;"
+		"popl %%esi;"
+		: /* no output */
+		: "a"(new)
+	);
+	// printk("task swiitch2\n");
+}
+
+void inner_task_switch(union task_union * new){
+	tss.esp0 = (DWord) &(new->stack[KERNEL_STACK_SIZE]);
+	set_cr3(get_DIR((struct task_struct *) new));
+	struct task_struct * old = current();
+	
+	unsigned long * ebpAddres;
+	__asm__ __volatile__(
+		"movl %%ebp, %0;"
+		: "=r"(ebpAddres)
+		: 
+	);
+	old->proces_esp = ebpAddres;
+	struct task_struct * newtsk = (struct task_struct *) new;
+	unsigned long * newEbpAddress = newtsk->proces_esp;
+	__asm__ __volatile__(
+		"movl %%ebx, %%esp;"
+		"popl %%ebp;"
+		"ret;"
+		: 
+		: "b"(newEbpAddress)
+	);
 }
 
 void init_task1(void)
 {
+	struct list_head * first_freequeue = list_first( &freequeue );
+	struct task_struct * mi_estructura = list_head_to_task_struct(first_freequeue);
+	list_del(first_freequeue); 
+	
+	printk("init_task1");
+	union task_union * tku = (union task_union *) mi_estructura;
+	
+	mi_estructura->PID = 1;
+	allocate_DIR(mi_estructura);
+	set_user_pages(mi_estructura);
+	
+	tss.esp0 = (DWord) &(tku->stack[KERNEL_STACK_SIZE]);
+	set_cr3(get_DIR(mi_estructura));
 }
 
-
 void init_sched(){
+	// printk("Init_sched lanzado1");
 	INIT_LIST_HEAD(&freequeue);
-	struct list_head * aux;
-	aux = &freequeue;
-	union task_union * aux_task = task;
+
+	// struct list_head * aux;
+	// aux = &freequeue;
+	// union task_union * aux_task = task;
 	for(int i = 0; i<NR_TASKS; i++){
-		struct list_head lista;
-		INIT_LIST_HEAD(&lista);
-		list_add_tail(&lista,aux);
-		aux_task->task.list = &lista;
-		aux_task++;
-		aux = aux->next;
+
+		// struct list_head lista;
+		// INIT_LIST_HEAD(&lista);
+		list_add_tail(&task[i].task.list,&freequeue);
+		// aux_task->task.list = &lista;
+		// aux_task++;
+		// aux = aux->next;
 	}
+	// printk("Init_sched lanzado2");
 
 	INIT_LIST_HEAD(&readyqueue);
 }

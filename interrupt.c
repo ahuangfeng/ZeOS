@@ -109,6 +109,11 @@ void keyboard_routine(){
     char c = 'C';
     if(valNum < 98){
       c = char_map[valNum];
+      if(c == 'i'){
+        printk("Int task switch1");
+        task_switch((union task_union *) idle_task);
+        printk("Int task switch2");
+      }
     }
     if( c == '\0'){
       c = 'C';
@@ -121,3 +126,5 @@ void clock_routine(){
   ++zeos_ticks;
   zeos_show_clock();
 }
+
+

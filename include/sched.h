@@ -17,9 +17,10 @@ enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
 struct task_struct {
   int PID;			/* Process ID. This MUST be the first field of the struct. */
   page_table_entry * dir_pages_baseAddr;
-  struct list_head * list;
+  struct list_head list;
+  unsigned long * proces_esp;
 };
-//TODO: freequeue de donde cogemos las tasks task_structs
+
 union task_union {
   struct task_struct task;
   unsigned long stack[KERNEL_STACK_SIZE];    /* pila de sistema, per procés */
