@@ -2,3 +2,8 @@
 *.bin
 *.s
 *.out
+*.vscode
+bootsect
+build
+system
+user
