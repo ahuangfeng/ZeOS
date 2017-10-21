@@ -54,9 +54,9 @@ int allocate_DIR(struct task_struct *t)
 void cpu_idle(void)
 {
 	__asm__ __volatile__("sti": : :"memory");
-	printk("cpu_idle!\n");
 	while(1)
 	{
+		// printk("While infinit!\n");
 	;
 	}
 }
@@ -66,13 +66,12 @@ void init_idle (void)
 	struct list_head * first_freequeue = list_first( &freequeue );
 	struct task_struct * structura = list_head_to_task_struct(first_freequeue);
 	list_del(first_freequeue); 
-	printk("\ninit_idle");
+	// printk("\ninit_idle");
 	// freequeue = *first_freequeue;
 	
 	structura->PID = 0;
 	allocate_DIR(structura);
-	//TODO: porque task_switch? lo ejecutaremos despues
-	// task_switch((union task_union *) structura);
+	
 	union task_union * tku = (union task_union *) structura;
 	tku->stack[KERNEL_STACK_SIZE-1] = ( unsigned long) &cpu_idle; 
 	tku->stack[KERNEL_STACK_SIZE-2] = 0;
@@ -81,7 +80,7 @@ void init_idle (void)
 }
 
 void task_switch(union task_union * new){
-	// printk("task swiitch\n"); //TODO: no lo vemos
+	// printk("task swiitch\n");
 	__asm__ __volatile__(
 		"pushl %%esi;"
 		"pushl %%edi;"
@@ -127,7 +126,7 @@ void init_task1(void)
 	struct task_struct * mi_estructura = list_head_to_task_struct(first_freequeue);
 	list_del(first_freequeue); 
 	
-	printk("init_task1");
+	// printk("init_task1");
 	union task_union * tku = (union task_union *) mi_estructura;
 	
 	mi_estructura->PID = 1;
@@ -139,7 +138,6 @@ void init_task1(void)
 }
 
 void init_sched(){
-	// printk("Init_sched lanzado1");
 	INIT_LIST_HEAD(&freequeue);
 
 	// struct list_head * aux;
@@ -149,12 +147,14 @@ void init_sched(){
 
 		// struct list_head lista;
 		// INIT_LIST_HEAD(&lista);
+
+		//The declaration of the task array with the task_union is also provided
 		list_add_tail(&task[i].task.list,&freequeue);
+
 		// aux_task->task.list = &lista;
 		// aux_task++;
 		// aux = aux->next;
 	}
-	// printk("Init_sched lanzado2");
 
 	INIT_LIST_HEAD(&readyqueue);
 }

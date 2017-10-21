@@ -44,13 +44,13 @@ int __attribute__ ((__section__(".text.main")))
     /* Next line, tries to move value 0 to CR3 register. This register is a privileged one, and so it will raise an exception */
      /* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */
 
-
     // long count, acum;
     // count = 75;
     // acum = 0;
 	// acum = outer(count);
-	write(1, " HOLA que tal ?", 15);
-	perror();
+
+	//test write!
+	if(write(1, " \nHOLA que tal ?", 16) == -1) perror();
 	volatile int i = 0;
 	while(i<2000){
 		i++;
@@ -58,11 +58,22 @@ int __attribute__ ((__section__(".text.main")))
 	volatile int o = gettime();
 	char * str = "";
 	if(o > 0){
-		write(1,"gettime->",9);
+		if(write(1,"gettime->",9)) perror();
 		itoa(o,str);
-		write(1,str,strlen(str));
+		if(write(1,str,strlen(str))) perror();
+		write(1,"\n",1);
 	}
-	while(1){}
+	
+	//test pid
+	volatile int pid = getpid();
+	char * buffer = "";
+	itoa(pid,buffer);
+	write(1,"pid of first task --> ",22);
+	if(write(1,buffer,strlen(buffer))) perror();
+
+	while(1){
+		//nothing
+	}
 
   	return 0;
 }

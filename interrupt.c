@@ -110,9 +110,9 @@ void keyboard_routine(){
     if(valNum < 98){
       c = char_map[valNum];
       if(c == 'i'){
-        printk("Int task switch1");
+        // printk("Int task switch1");
         task_switch((union task_union *) idle_task);
-        printk("Int task switch2");
+        // printk("Int task switch2");
       }
     }
     if( c == '\0'){

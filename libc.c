@@ -30,23 +30,43 @@ void perror() {
 }
 
 int write(int fd, char *buffer, int size){
-	int ret = 0;
+	int ret = 0; //TODO: lo ponemos a -1?
 	__asm__ __volatile__ (
-		// "movl %1, %%ebx;"
-		// "movl %2, %%ecx;"
-		// "movl %3, %%edx;"
+		// "movl %1, %%ebx;" // ponemos el parametro fd en ebx
+		// "movl %2, %%ecx;" // ponemos el parametro buffer en ecx
+		// "movl %3, %%edx;" // ponemos el parametro size en edx
 		"movl $4, %%eax;"
 		"int $0x80;"
+		"movl %%eax, %0;"
 		: "=r"(ret) //operand = for write only => pone el valor output en ret
 		: "b"(fd), "c"(buffer), "d"(size) //b for ebx, c for ecx, d for edx
 		: 
 	);
-	//TODO: ebx, ecx , edx no se toquen durante la ejecucion
 	if (ret < 0) {
 		errno = -ret;
 		return -1;
 	}
 	errno = 0;
+	return ret;
+}
+
+int getpid(void){
+	//TODO: hay que implementarlo!
+	
+	int ret = -1;
+	__asm__ __volatile__(
+		"movl $20, %%eax;"
+		"int $0x80;"
+		"movl %%eax, %0;" //moving eax to the first variable--> in this case ret
+		: "=g"(ret)
+		:
+		: "ax"
+	);
+	// if (ret < 0) {
+	// 	errno = -ret;
+	// 	return -1;
+	// }
+	// errno = 0;
 	return ret;
 }
 
