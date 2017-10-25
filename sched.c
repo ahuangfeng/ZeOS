@@ -6,6 +6,7 @@
 #include <mm.h>
 #include <io.h>
 
+int ultimPID;
 /**
  * Container for the Task array and 2 additional pages (the first and the last one)
  * to protect against out of bound accesses.
@@ -70,6 +71,7 @@ void init_idle (void)
 	// freequeue = *first_freequeue;
 	
 	structura->PID = 0;
+	ultimPID = 0;
 	allocate_DIR(structura);
 	
 	union task_union * tku = (union task_union *) structura;
@@ -130,6 +132,7 @@ void init_task1(void)
 	union task_union * tku = (union task_union *) mi_estructura;
 	
 	mi_estructura->PID = 1;
+	ultimPID++;
 	allocate_DIR(mi_estructura);
 	set_user_pages(mi_estructura);
 	

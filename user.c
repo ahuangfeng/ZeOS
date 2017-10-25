@@ -70,7 +70,7 @@ int __attribute__ ((__section__(".text.main")))
 	itoa(pid,buffer);
 	write(1,"pid of first task --> ",22);
 	if(write(1,buffer,strlen(buffer))) perror();
-
+	
 	while(1){
 		//nothing
 	}

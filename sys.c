@@ -44,9 +44,67 @@ int sys_getpid()
 int sys_fork()
 {
   int PID=-1;
-
-  // creates the child process
+  int frames[NUM_PAG_DATA];  
   
+  if(list_empty(&freequeue)) return -ENOMEM; //out of memory
+  
+  struct list_head *new_listPointer = list_first(&freequeue);
+  list_del(new_listPointer);
+
+  struct task_struct * newPCB = list_head_to_task_struct(new_listPointer);
+  struct task_struct * currentPCB = current();
+  // modificar taula de pagines per a que poguem arribar a les pagines del usuari!
+
+
+  
+  //Inicializacion de paginas en padre
+  int pag;
+  int new_ph_pag;
+  page_table_entry * pare_PT =  get_PT(currentPCB); //pare
+  page_table_entry * fill_PT = get_PT(newPCB); //fill
+  page_table_entry * dir_current = get_DIR(currentPCB);
+
+  /* frames for DATA */
+  for (pag=0;pag<NUM_PAG_DATA;pag++){
+    new_ph_pag=alloc_frame();
+    if(new_ph_pag == -1){
+      //si error, buidem pagines que em agafat
+      while(pag != 0){
+        free_frame(frames[--pag]);
+      }
+      return -ENOMEM;
+    }else{
+      frames[pag] = new_ph_pag;
+    } 
+  }
+  
+  copy_data(currentPCB, newPCB, 4096); //4096 bytes
+  
+  allocate_DIR(newPCB);
+
+  /* CODE User */
+  for (pag=0;pag<NUM_PAG_CODE;pag++){
+    fill_PT[PAG_LOG_INIT_CODE+pag].entry = pare_PT[PAG_LOG_INIT_CODE+pag].entry;
+  }
+
+  /* DATA User */ 
+  for (pag=0;pag<NUM_PAG_DATA;pag++){
+    set_ss_pag(fill_PT,PAG_LOG_INIT_DATA+pag,frames[pag]);
+  }
+
+  int adress_disponible = PAG_LOG_INIT_DATA + NUM_PAG_DATA;
+  for(pag = 0 ; pag <NUM_PAG_DATA; pag++ ){
+    set_ss_pag(pare_PT,adress_disponible+pag,frames[pag]);
+    copy_data((void *) ((PAG_LOG_INIT_DATA+pag) << 12),(void *) ((adress_disponible+pag)<<12),PAGE_SIZE);
+    del_ss_pag(pare_PT,adress_disponible+pag);
+  }
+  set_cr3(dir_current);
+
+  PID = ultimPID;
+  ultimPID++;
+  newPCB->PID = PID;
+  // newPCB->state = ST_READY;
+
   return PID;
 }
 

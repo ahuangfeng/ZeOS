@@ -87,7 +87,7 @@ void set_user_pages( struct task_struct *task )
 
   /* CODE */
   for (pag=0;pag<NUM_PAG_CODE;pag++){
-	new_ph_pag=alloc_frame();
+  new_ph_pag=alloc_frame();
   	process_PT[PAG_LOG_INIT_CODE+pag].entry = 0;
   	process_PT[PAG_LOG_INIT_CODE+pag].bits.pbase_addr = new_ph_pag;
   	process_PT[PAG_LOG_INIT_CODE+pag].bits.user = 1;
