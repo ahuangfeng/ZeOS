@@ -69,7 +69,7 @@ int getpid(void)
 
 int fork(void)
 {
-	int ret;
+	volatile int ret;
 	__asm__ volatile(
 		"int $0x80;"
 		: "=a"(ret) //output in ret

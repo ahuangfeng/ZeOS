@@ -21,6 +21,8 @@ struct task_struct {
   page_table_entry * dir_pages_baseAddr;
   struct list_head list;
   unsigned long * proces_esp;
+  int quantum;
+  enum state_t state;
 };
 
 union task_union {
@@ -59,10 +61,14 @@ page_table_entry * get_PT (struct task_struct *t) ;
 
 page_table_entry * get_DIR (struct task_struct *t) ;
 
+int get_quantum (struct task_struct *t);
+void set_quantum (struct task_struct * t, int new_quantum);
+
 /* Headers for the scheduling policy */
 void sched_next_rr();
 void update_process_state_rr(struct task_struct *t, struct list_head *dest);
 int needs_sched_rr();
 void update_sched_data_rr();
+void schedule();
 
 #endif  /* __SCHED_H__ */

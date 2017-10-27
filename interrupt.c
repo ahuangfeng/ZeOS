@@ -6,6 +6,7 @@
 #include <segment.h>
 #include <hardware.h>
 #include <io.h>
+#include <libc.h>
 
 #include <zeos_interrupt.h>
 
@@ -18,6 +19,7 @@ Register    idtR;
 // void keyboard_handler();
 // void clock_handler();
 // void system_call_handler();
+
 
 char char_map[] =
 {
@@ -109,10 +111,8 @@ void keyboard_routine(){
     char c = 'C';
     if(valNum < 98){
       c = char_map[valNum];
-      if(c == 'i'){
-        // printk("Int task switch1");
+      if(c == 'i'){ // task_switch
         task_switch((union task_union *) idle_task);
-        // printk("Int task switch2");
       }
     }
     if( c == '\0'){
@@ -125,6 +125,7 @@ void keyboard_routine(){
 void clock_routine(){
   ++zeos_ticks;
   zeos_show_clock();
+  schedule();
 }
 
 

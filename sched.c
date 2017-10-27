@@ -7,6 +7,7 @@
 #include <io.h>
 
 int ultimPID;
+int quantum_restant = 0;
 /**
  * Container for the Task array and 2 additional pages (the first and the last one)
  * to protect against out of bound accesses.
@@ -62,6 +63,65 @@ void cpu_idle(void)
 	}
 }
 
+void schedule(){
+	update_sched_data_rr();
+	if(needs_sched_rr()){
+		update_process_state_rr(current(), &readyqueue);
+		sched_next_rr();
+	}
+}
+
+void update_sched_data_rr(void){
+	quantum_restant--;
+}
+
+int needs_sched_rr(void){
+	if(quantum_restant == 0){
+		if(!list_empty(&readyqueue)){
+			return 1;
+		}
+		quantum_restant = get_quantum(current());
+	}
+	return 0;
+}
+
+
+void sched_next_rr(){
+	struct task_struct * nou_tku;
+	if(!list_empty(&readyqueue)){
+		struct list_head * nou_list;
+		nou_list = list_first(&readyqueue);
+		nou_tku = list_head_to_task_struct(nou_list);
+	}else{
+		nou_tku = idle_task;
+	}
+	nou_tku->state = ST_RUN;
+	quantum_restant = get_quantum(nou_tku);
+	task_switch((union task_union *) nou_tku);
+}
+
+void update_process_state_rr(struct task_struct *t, struct list_head *dest){
+	if(t->state != ST_RUN){
+		list_del(&(t->list));
+	}
+	if(dest != NULL){ // el siguiente estado no es running
+		list_add_tail(&(t->list),dest);
+		if(dest == &readyqueue){
+			t->state = ST_READY;
+		}
+	}else{
+		t->state = ST_RUN;
+	}
+}
+
+int get_quantum (struct task_struct *t){
+	return t->quantum;
+}
+
+void set_quantum (struct task_struct * t, int new_quantum){
+	t->quantum = new_quantum;
+}
+
 void init_idle (void)
 {
 	struct list_head * first_freequeue = list_first( &freequeue );
@@ -70,8 +130,8 @@ void init_idle (void)
 	// printk("\ninit_idle");
 	// freequeue = *first_freequeue;
 	
-	structura->PID = 0;
-	ultimPID = 0;
+	structura->PID = ultimPID;
+	ultimPID++;
 	allocate_DIR(structura);
 	
 	union task_union * tku = (union task_union *) structura;
@@ -131,7 +191,7 @@ void init_task1(void)
 	// printk("init_task1");
 	union task_union * tku = (union task_union *) mi_estructura;
 	
-	mi_estructura->PID = 1;
+	mi_estructura->PID = ultimPID;
 	ultimPID++;
 	allocate_DIR(mi_estructura);
 	set_user_pages(mi_estructura);
@@ -143,22 +203,12 @@ void init_task1(void)
 void init_sched(){
 	INIT_LIST_HEAD(&freequeue);
 
-	// struct list_head * aux;
-	// aux = &freequeue;
-	// union task_union * aux_task = task;
 	for(int i = 0; i<NR_TASKS; i++){
-
-		// struct list_head lista;
-		// INIT_LIST_HEAD(&lista);
-
-		//The declaration of the task array with the task_union is also provided
 		list_add_tail(&task[i].task.list,&freequeue);
-
-		// aux_task->task.list = &lista;
-		// aux_task++;
-		// aux = aux->next;
 	}
 
+	//iniciar el quantum inicial
+	quantum_restant = 10;
 	INIT_LIST_HEAD(&readyqueue);
 }
 

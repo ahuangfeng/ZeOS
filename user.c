@@ -36,25 +36,15 @@ long outer(long n){
 	return acum;
 }
 
-
-
-int __attribute__ ((__section__(".text.main")))
-  main(void)
-{
-    /* Next line, tries to move value 0 to CR3 register. This register is a privileged one, and so it will raise an exception */
-     /* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */
-
-    // long count, acum;
-    // count = 75;
-    // acum = 0;
-	// acum = outer(count);
-
-	//test write!
+void test_write(){
 	if(write(1, " \nHOLA que tal ?", 16) == -1) perror();
 	volatile int i = 0;
 	while(i<2000){
 		i++;
 	}
+}
+
+void test_gettime(){
 	volatile int o = gettime();
 	char * str = "";
 	if(o > 0){
@@ -63,13 +53,46 @@ int __attribute__ ((__section__(".text.main")))
 		if(write(1,str,strlen(str))) perror();
 		write(1,"\n",1);
 	}
-	
+}
+
+void test_pid(){
 	//test pid
 	volatile int pid = getpid();
 	char * buffer = "";
 	itoa(pid,buffer);
 	write(1,"pid of first task --> ",22);
 	if(write(1,buffer,strlen(buffer))) perror();
+}
+
+void test_fork(){
+	volatile int pid = fork();
+	if(pid == 0){
+		char resString[20];
+		itoa(pid,resString);
+		write(1,"\nhijo:",6);
+		write(1,resString,strlen(resString));
+	}else if(pid > 0){
+		char resString[20];
+		itoa(pid,resString);
+
+		write(1,"\nPadre --> pid del hijo:",24);
+		write(1,resString,strlen(resString));
+	}else{
+		write(1,"Error!",6);
+	}
+}
+
+int __attribute__ ((__section__(".text.main")))
+  main(void)
+{
+	//test pid
+	// test_pid();
+
+	//test fork
+	test_fork();
+
+	
+	
 	
 	while(1){
 		//nothing
