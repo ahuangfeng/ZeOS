@@ -195,7 +195,7 @@ int sys_write(int fd, char * buffer, int size) {
     return ’ Negative number in case of error (specifying the kind of error) and
     the number of bytes written if OK.
   */
-
+  int tamTotal = size;
   char buff[TAMANYBUFF];
 
   //checking the parameters
@@ -210,7 +210,7 @@ int sys_write(int fd, char * buffer, int size) {
     return -EINVAL; // Invalid Argument
   }
 
-  int res = 0;
+  
   while(size>TAMANYBUFF){  // TAMANYBUFF = 4
     copy_from_user(buffer, buff, TAMANYBUFF);
     sys_write_console(buff, TAMANYBUFF);
@@ -221,7 +221,7 @@ int sys_write(int fd, char * buffer, int size) {
     copy_from_user(buffer, buff, size);
     sys_write_console(buff,size);
   }
-  return res;
+  return tamTotal;
 
 }
 

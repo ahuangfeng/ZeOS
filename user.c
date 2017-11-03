@@ -67,7 +67,7 @@ void test_pid(){
 void test_fork(){
 	volatile int pid = fork();
 	if(pid == 0){
-		exit();
+		// exit();
 		char resString[20];
 		itoa(pid,resString);
 		write(1,"\nhijo:",6);
@@ -96,9 +96,9 @@ int __attribute__ ((__section__(".text.main")))
 	// test_pid();
 
 	//test fork
-	test_fork();
+	// test_fork();
 
-	// runjp();
+	runjp();
 	
 	
 	

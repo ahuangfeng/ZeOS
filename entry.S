@@ -90,13 +90,13 @@ ENTRY(system_call_handler)
 	jl err						//If it is, jump to return an error
 	cmpl $MAX_SYSCALL, %eax		//Is syscall greater than MAX_SYSCALL (4)?
 	jg err						//If it is, jump to return an error
-      //pushl %eax
-      //call userToSystem_routine
-      //popl %eax
+      pushl %eax
+      call userToSystem_routine
+      popl %eax
 	call *sys_call_table(, %eax, 0x04)	//Call the corresponding service routine
-      //pushl %eax
-      //call systemToUser_routine
-      //popl %eax
+      pushl %eax
+      call systemToUser_routine
+      popl %eax
 	jmp fin								//Finish
 err:
 	movl $-ENOSYS, %eax				//Move to eax the ENOSYS error
