@@ -88,7 +88,7 @@ int get_stats(int pid, struct stats *st){
 	__asm__ volatile(
 		"int $0x80;"
 		: "=a"(ret) //output in ret
-		: "a"(35), "b"(pid), "c"(st) 
+		: "a"(35), "b"(pid), "c"(st)
 		:);
 	if (ret >= 0){
 		return ret;
@@ -105,6 +105,7 @@ void exit(void) {
 		:
 		: "a"(1) // 2 in eax
 		:);
+		
 }
 
 long long int gettime()

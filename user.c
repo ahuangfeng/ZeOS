@@ -6,7 +6,7 @@ int pid;
 
 
 int add( int par1, int par2){
-	__asm__ __volatile__ ( 
+	__asm__ __volatile__ (
                 "movl 0x8(%ebp), %eax;"
                 "addl 0xc(%ebp), %eax;"
                 //"add %edx, %eax;"
@@ -67,11 +67,12 @@ void test_pid(){
 void test_fork(){
 	volatile int pid = fork();
 	if(pid == 0){
-		// exit();
-		char resString[20];
-		itoa(pid,resString);
-		write(1,"\nhijo:",6);
-		write(1,resString,strlen(resString));
+
+		exit();
+		// char resString[20];
+		// itoa(pid,resString);
+		// write(1,"\nhijo:",6);
+		// write(1,resString,strlen(resString));
 	}else if(pid > 0){
 		//funciona
 		// exit();
