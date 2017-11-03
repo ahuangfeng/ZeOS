@@ -99,6 +99,21 @@ void setIdt()
   set_idt_reg(&idtR);
 }
 
+void userToSystem_routine(){
+  unsigned long current_ticks = get_ticks();
+  // printk("userToSystem");
+  current()->stadisticas.user_ticks += current_ticks-(current()->stadisticas.elapsed_total_ticks);
+  current()->stadisticas.elapsed_total_ticks = current_ticks;
+  // printk("userToSystem\n");
+}
+
+void systemToUser_routine(){
+  unsigned long current_ticks = get_ticks();
+  current()->stadisticas.system_ticks += current_ticks-(current()->stadisticas.elapsed_total_ticks);
+  current()->stadisticas.elapsed_total_ticks = current_ticks;
+  // printk("systemToUser\n");
+}
+
 
 void keyboard_routine(){
   unsigned char num = inb(0x60);

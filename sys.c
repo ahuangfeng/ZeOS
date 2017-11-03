@@ -139,8 +139,25 @@ int sys_fork()
   //i
   list_add_tail(&(newPCB->list),&readyqueue);
 
+  //reinicia las stats del hijo
+  init_stats(newPCB);
+  // int i = currentPCB->stadisticas.elapsed_total_ticks;
+  // char h[10];
+  // itoa(i,h);
+  // printk(h);
+  // printk("444");
 
   return PID;
+}
+
+void init_stats(struct task_struct *current){
+  current->stadisticas.blocked_ticks = 0;
+  current->stadisticas.elapsed_total_ticks = get_ticks();
+  current->stadisticas.ready_ticks = 0;
+  current->stadisticas.remaining_ticks = 10;
+  current->stadisticas.system_ticks = 0;
+  current->stadisticas.total_trans = 0;
+  current->stadisticas.user_ticks = 0;
 }
 
 
@@ -149,14 +166,26 @@ void sys_exit()
 {
   page_table_entry *pt_current = get_PT(current());
 
+  //data user
   for (int i = 0; i < NUM_PAG_DATA; i++) {
     free_frame(get_frame(pt_current, PAG_LOG_INIT_DATA+i));
     del_ss_pag(pt_current, PAG_LOG_INIT_DATA+i);
   }
+ 
+  // int pag;
+  // // code user
+  // for (pag=0;pag < NUM_PAG_CODE;pag++){
+  //   del_ss_pag(pt_current,PAG_LOG_INIT_CODE+pag);
+  // }
 
+  // //kernel
+  // for(pag = 0; pag < NUM_PAG_KERNEL; pag++){
+  //   del_ss_pag(pt_current,pag);
+  // }
   list_add_tail(&current()->list, &freequeue);
   current()->PID = -1;
   sched_next_rr();
+  // printk("Exx");
 }
 
 int sys_write(int fd, char * buffer, int size) {
@@ -194,6 +223,23 @@ int sys_write(int fd, char * buffer, int size) {
   }
   return res;
 
+}
+
+int sys_get_stats(int pid, struct stats *st){
+  int ret = -1;
+  if(pid < 0) return -EINVAL;
+  if(!access_ok(VERIFY_WRITE,st,sizeof(struct stats))){
+    return -EFAULT;
+  }
+
+  for( int i = 0; i<NR_TASKS ; i++){
+    if(task[i].task.PID==pid){
+      task[i].task.stadisticas.remaining_ticks = get_quantum(current());
+      copy_to_user(&task[i].task.stadisticas,st,sizeof(struct stats));
+      return 0;
+    }
+  }
+  return -ESRCH;
 }
 
 int sys_gettime(){

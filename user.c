@@ -67,16 +67,23 @@ void test_pid(){
 void test_fork(){
 	volatile int pid = fork();
 	if(pid == 0){
+		exit();
 		char resString[20];
 		itoa(pid,resString);
 		write(1,"\nhijo:",6);
 		write(1,resString,strlen(resString));
 	}else if(pid > 0){
+		//funciona
+		// exit();
 		char resString[20];
 		itoa(pid,resString);
-
 		write(1,"\nPadre --> pid del hijo:",24);
 		write(1,resString,strlen(resString));
+		struct stats *St;
+		get_stats(1,St);
+		write(1,"\nPP",3); 
+		// St->remaining_ticks = 20;
+		// writeNumber("UserTicks:",St->remaining_ticks);
 	}else{
 		write(1,"Error!",6);
 	}
@@ -91,6 +98,7 @@ int __attribute__ ((__section__(".text.main")))
 	//test fork
 	test_fork();
 
+	// runjp();
 	
 	
 	

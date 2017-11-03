@@ -83,7 +83,23 @@ int fork(void)
 	}
 }
 
+int get_stats(int pid, struct stats *st){
+	volatile int ret;
+	__asm__ volatile(
+		"int $0x80;"
+		: "=a"(ret) //output in ret
+		: "a"(35), "b"(pid), "c"(st) 
+		:);
+	if (ret >= 0){
+		return ret;
+	}else{
+		errno = -ret;
+		return -1;
+	}
+}
+
 void exit(void) {
+	write(1,"-->Exit\n",8);
 	__asm__ volatile(
 		"int $0x80;"
 		:
@@ -101,6 +117,13 @@ long long int gettime()
 		:
 		: "%eax");
 	return result;
+}
+
+writeNumber(char * message,int a ){
+	char res[10];
+	itoa(a,res);
+	write(1,message,strlen(message));
+	write(1,res,10);
 }
 
 void itoa(int a, char *b)
