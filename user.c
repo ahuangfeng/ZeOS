@@ -82,7 +82,6 @@ void test_fork(){
 		write(1,resString,strlen(resString));
 		struct stats *St;
 		get_stats(1,St);
-		write(1,"\nPP",3);
 		// St->remaining_ticks = 20;
 		// writeNumber("UserTicks:",St->remaining_ticks);
 	}else{
@@ -97,9 +96,9 @@ int __attribute__ ((__section__(".text.main")))
 	// test_pid();
 
 	//test fork
-	//test_fork();
+	test_fork();
 
-	runjp_rank(5, 10);
+	// runjp();
 
 
 

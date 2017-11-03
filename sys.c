@@ -125,7 +125,7 @@ int sys_fork()
   PID = ultimPID;
   ultimPID++;
   newPCB->PID = PID;
-
+  newPCB->quantum = 10;
 
   //h
   union task_union * tku_fill = (union task_union*) newPCB;

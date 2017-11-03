@@ -146,8 +146,6 @@ void init_idle (void)
 
 	structura->PID = ultimPID;
 	ultimPID++;
-	// structura->quantum=5;
-	init_stats(structura);
 	allocate_DIR(structura);
 
 	union task_union * tku = (union task_union *) structura;
@@ -155,8 +153,9 @@ void init_idle (void)
 	tku->stack[KERNEL_STACK_SIZE-2] = 0;
 	structura->proces_esp = &(tku->stack[KERNEL_STACK_SIZE-2]);
 
+	structura->quantum = 10;
 	idle_task = structura;
-	// init_stats(structura);
+	init_stats(structura);
 }
 
 void task_switch(union task_union * new){
@@ -181,7 +180,7 @@ void inner_task_switch(union task_union * new){
 	tss.esp0 = (DWord) &(new->stack[KERNEL_STACK_SIZE]);
 	set_cr3(get_DIR((struct task_struct *) new));
 
-	struct task_struct * old = current();
+	struct task_struct * oldtsk = current();
 	struct task_struct * newtsk = (struct task_struct *) new;
 
 	// void * oldEsp = old->proces_esp;
@@ -190,17 +189,22 @@ void inner_task_switch(union task_union * new){
 	unsigned long * ebpAddres;
 	__asm__ __volatile__(
 		"movl %%ebp, %0;"
-		: "=g"(ebpAddres)
-		:
+		: "=g"(oldtsk->proces_esp)
+		: 
 	);
-	old->proces_esp = ebpAddres;
-	unsigned long * newEbpAddress = newtsk->proces_esp;
+	// oldtsk->proces_esp = ebpAddres;
+	// unsigned long * newEbpAddress = newtsk->proces_esp;
 	__asm__ __volatile__(
 		"movl %0, %%esp;"
+		:
+		: "g"(newtsk->proces_esp)
+	);
+
+	__asm__ __volatile__(
 		"popl %%ebp;"
 		"ret;"
 		:
-		: "g"(newEbpAddress)
+		:
 	);
 
 }
@@ -217,13 +221,14 @@ void init_task1(void)
 	mi_estructura->PID = ultimPID;
 	ultimPID++;
 	init_stats(mi_estructura);
-	// mi_estructura->quantum = 10;
 
 	allocate_DIR(mi_estructura);
 	set_user_pages(mi_estructura);
 
 	tss.esp0 = (DWord) &(tku->stack[KERNEL_STACK_SIZE]);
 	set_cr3(get_DIR(mi_estructura));
+	// mi_estructura->state = ST_RUN;
+	// mi_estructura->quantum = 10;
 }
 
 void init_sched(){
