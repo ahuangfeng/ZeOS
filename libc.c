@@ -99,7 +99,7 @@ int get_stats(int pid, struct stats *st){
 }
 
 void exit(void) {
-	write(1,"-->Exit\n",8);
+	// write(1,"-->Exit\n",8);
 	__asm__ volatile(
 		"int $0x80;"
 		:

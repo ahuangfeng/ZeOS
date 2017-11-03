@@ -75,9 +75,9 @@ int sys_fork()
   /* frames for DATA */
   for (pag=0;pag<NUM_PAG_DATA;pag++){
     new_ph_pag=alloc_frame();
-    if(new_ph_pag == -1){
+    if(new_ph_pag < 0){
       //si error, buidem pagines que em agafat
-      while(pag != 0){
+      while(pag != 0){ 
         free_frame(frames[--pag]);
       }
       return -ENOMEM;
@@ -135,7 +135,7 @@ int sys_fork()
   tku_fill->stack[KERNEL_STACK_SIZE-19] = 0;
   // printk(";13");
   tku_fill->task.proces_esp = (unsigned long*)&(tku_fill->stack[KERNEL_STACK_SIZE-19]);
-
+  newPCB->state = ST_READY;
   //i
   list_add_tail(&(newPCB->list),&readyqueue);
 
@@ -171,7 +171,7 @@ void sys_exit()
     free_frame(get_frame(pt_current, PAG_LOG_INIT_DATA+i));
     del_ss_pag(pt_current, PAG_LOG_INIT_DATA+i);
   }
- 
+//  printk("Hola");
   // int pag;
   // // code user
   // for (pag=0;pag < NUM_PAG_CODE;pag++){

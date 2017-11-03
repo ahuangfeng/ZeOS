@@ -160,9 +160,9 @@ void task_switch(union task_union * new){
 		"pushl %%esi;"
 		"pushl %%edi;"
 		"pushl %%ebx;"
-		"pushl %%eax;" 
+		// "pushl %%eax;" 
 		"call inner_task_switch;"
-		"popl %%eax;"
+		// "popl %%eax;"
 		"popl %%ebx;"
 		"popl %%edi;"
 		"popl %%esi;"
@@ -175,7 +175,13 @@ void task_switch(union task_union * new){
 void inner_task_switch(union task_union * new){
 	tss.esp0 = (DWord) &(new->stack[KERNEL_STACK_SIZE]);
 	set_cr3(get_DIR((struct task_struct *) new));
+	
 	struct task_struct * old = current();
+	struct task_struct * newtsk = (struct task_struct *) new;
+	
+	void * oldEsp = old->proces_esp;
+	void * newEsp = newtsk->proces_esp;
+
 	
 	unsigned long * ebpAddres;
 	__asm__ __volatile__(
@@ -184,10 +190,9 @@ void inner_task_switch(union task_union * new){
 		: 
 	);
 	old->proces_esp = ebpAddres;
-	struct task_struct * newtsk = (struct task_struct *) new;
 	unsigned long * newEbpAddress = newtsk->proces_esp;
 	__asm__ __volatile__(
-		"movl %%ebx, %%esp;"
+		"movl %%ebp, %%esp;"
 		"popl %%ebp;"
 		"ret;"
 		: 
