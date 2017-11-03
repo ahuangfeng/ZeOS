@@ -100,7 +100,6 @@ int sys_fork()
   
   /* CODE User */ 
   for (pag=0;pag<NUM_PAG_CODE;pag++){
-    //se puede user get_frame
     set_ss_pag(fill_PT,PAG_LOG_INIT_CODE+pag,get_frame(pare_PT,PAG_LOG_INIT_CODE+pag));
   }
   
@@ -128,16 +127,10 @@ int sys_fork()
   newPCB->PID = PID;
   
   // printk("10");
-  // int ebpAddres;
-	// __asm__ __volatile__(
-  //   "movl %%ebp, %0;"
-	// 	: "=r"(ebpAddres)
-	// 	: 
-  // );
   // printk(";11");
   //h
   union task_union * tku_fill = (union task_union*) newPCB;
-  //hemos calculado que hay 18 pushes
+  // 5 push de hardware i 11 de SAVE_ALL + @handler --> ponemos en -18
   tku_fill->stack[KERNEL_STACK_SIZE-18] = (unsigned long)&ret_from_fork;
   // printk(";12");
   tku_fill->stack[KERNEL_STACK_SIZE-19] = 0;
