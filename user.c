@@ -95,9 +95,9 @@ int __attribute__ ((__section__(".text.main")))
 	// test_pid();
 
 	//test fork
-	test_fork();
+	// test_fork();
 
-	// runjp();
+	runjp();
 	
 	
 	

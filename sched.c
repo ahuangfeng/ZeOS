@@ -91,6 +91,7 @@ void sched_next_rr(){
 	if(!list_empty(&readyqueue)){
 		struct list_head * nou_list;
 		nou_list = list_first(&readyqueue);
+		list_del(nou_list);
 		nou_tku = list_head_to_task_struct(nou_list);
 	}else{
 		nou_tku = idle_task;
