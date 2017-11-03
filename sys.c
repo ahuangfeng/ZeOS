@@ -24,6 +24,8 @@
 
 #define TAMANYBUFF 4
 
+extern int quantum_restant;
+
 int check_fd(int fd, int permissions)
 {
   if (fd!=1) return -9; /*EBADF*/
@@ -234,7 +236,7 @@ int sys_get_stats(int pid, struct stats *st){
 
   for( int i = 0; i<NR_TASKS ; i++){
     if(task[i].task.PID==pid){
-      task[i].task.stadisticas.remaining_ticks = get_quantum(current());
+      task[i].task.stadisticas.remaining_ticks = quantum_restant; // get_quantum(current());
       copy_to_user(&task[i].task.stadisticas,st,sizeof(struct stats));
       return 0;
     }
