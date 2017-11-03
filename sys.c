@@ -77,7 +77,7 @@ int sys_fork()
     new_ph_pag=alloc_frame();
     if(new_ph_pag < 0){
       //si error, buidem pagines que em agafat
-      while(pag != 0){ 
+      while(pag != 0){
         free_frame(frames[--pag]);
       }
       return -ENOMEM;
@@ -126,7 +126,7 @@ int sys_fork()
   ultimPID++;
   newPCB->PID = PID;
 
-  
+
   //h
   union task_union * tku_fill = (union task_union*) newPCB;
   // 5 push de hardware i 11 de SAVE_ALL + @handler --> ponemos en -18
@@ -154,7 +154,7 @@ void init_stats(struct task_struct *current){
   current->stadisticas.blocked_ticks = 0;
   current->stadisticas.elapsed_total_ticks = get_ticks();
   current->stadisticas.ready_ticks = 0;
-  current->stadisticas.remaining_ticks = 10;
+  current->stadisticas.remaining_ticks = get_ticks();
   current->stadisticas.system_ticks = 0;
   current->stadisticas.total_trans = 0;
   current->stadisticas.user_ticks = 0;
@@ -210,7 +210,7 @@ int sys_write(int fd, char * buffer, int size) {
     return -EINVAL; // Invalid Argument
   }
 
-  
+
   while(size>TAMANYBUFF){  // TAMANYBUFF = 4
     copy_from_user(buffer, buff, TAMANYBUFF);
     sys_write_console(buff, TAMANYBUFF);
