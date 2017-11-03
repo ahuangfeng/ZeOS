@@ -1,5 +1,5 @@
 /*
- * libc.c 
+ * libc.c
  */
 
 #include <libc.h>
@@ -81,6 +81,14 @@ int fork(void)
 		errno = -ret;
 		return -1;
 	}
+}
+
+void exit(void) {
+	__asm__ volatile(
+		"int $0x80;"
+		:
+		: "a"(1) // 2 in eax
+		:);
 }
 
 long long int gettime()

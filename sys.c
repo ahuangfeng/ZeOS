@@ -50,22 +50,22 @@ int sys_fork()
   int PID=-1;
   //a
   if(list_empty(&freequeue)) return -ENOMEM; //out of memory
-  
+
   struct list_head *new_listPointer = list_first(&freequeue);
   list_del(new_listPointer);
-  
+
   struct task_struct * newPCB = list_head_to_task_struct(new_listPointer);
   struct task_struct * currentPCB = current();
   // modificar taula de pagines per a que poguem arribar a les pagines del usuari!
-  
+
   //b
   copy_data(currentPCB, newPCB, 4096); //4096 bytes
   //c
   allocate_DIR(newPCB);
-  
+
   //d
   //Inicializacion de paginas en padre
-  int frames[NUM_PAG_DATA];  
+  int frames[NUM_PAG_DATA];
   int pag;
   int new_ph_pag;
   // printk("0");
@@ -83,33 +83,33 @@ int sys_fork()
       return -ENOMEM;
     }else{
       frames[pag] = new_ph_pag;
-    } 
+    }
   }
   // printk("2");
-  
-  
+
+
   // printk("3");
   page_table_entry * fill_PT = get_PT(newPCB); //fill
   // printk("4");
-  
+
   /* Kernel Data and code*/
   //e-A
   for(pag = 0; pag < NUM_PAG_KERNEL; pag++){
     set_ss_pag(fill_PT,pag, get_frame(pare_PT,pag));
-  } 
-  
-  /* CODE User */ 
+  }
+
+  /* CODE User */
   for (pag=0;pag<NUM_PAG_CODE;pag++){
     set_ss_pag(fill_PT,PAG_LOG_INIT_CODE+pag,get_frame(pare_PT,PAG_LOG_INIT_CODE+pag));
   }
-  
+
   // printk("6");
-  /* DATA User */ 
+  /* DATA User */
   //e1-B
   for (pag=0;pag<NUM_PAG_DATA;pag++){
     set_ss_pag(fill_PT,PAG_LOG_INIT_DATA+pag,frames[pag]);
   }
-  
+
   // printk("7");
   // establecer espacio en padre para despues linkear a hijo
   //e-2
@@ -125,9 +125,8 @@ int sys_fork()
   PID = ultimPID;
   ultimPID++;
   newPCB->PID = PID;
+
   
-  // printk("10");
-  // printk(";11");
   //h
   union task_union * tku_fill = (union task_union*) newPCB;
   // 5 push de hardware i 11 de SAVE_ALL + @handler --> ponemos en -18
@@ -136,18 +135,28 @@ int sys_fork()
   tku_fill->stack[KERNEL_STACK_SIZE-19] = 0;
   // printk(";13");
   tku_fill->task.proces_esp = (unsigned long*)&(tku_fill->stack[KERNEL_STACK_SIZE-19]);
-  
+
   //i
   list_add_tail(&(newPCB->list),&readyqueue);
-  
-  
+
+
   return PID;
 }
 
 
 
 void sys_exit()
-{  
+{
+  page_table_entry *pt_current = get_PT(current());
+
+  for (int i = 0; i < NUM_PAG_DATA; i++) {
+    free_frame(get_frame(pt_current, PAG_LOG_INIT_DATA+i));
+    del_ss_pag(pt_current, PAG_LOG_INIT_DATA+i);
+  }
+
+  list_add_tail(&current()->list, &freequeue);
+  current()->PID = -1;
+  sched_next_rr();
 }
 
 int sys_write(int fd, char * buffer, int size) {
@@ -171,7 +180,7 @@ int sys_write(int fd, char * buffer, int size) {
   if(size < 0){
     return -EINVAL; // Invalid Argument
   }
-  
+
   int res = 0;
   while(size>TAMANYBUFF){  // TAMANYBUFF = 4
     copy_from_user(buffer, buff, TAMANYBUFF);
