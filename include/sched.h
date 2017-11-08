@@ -25,6 +25,7 @@ struct task_struct {
   int quantum;
   enum state_t state;
   struct stats stadisticas;
+  struct task_struct *thread_parent;
 };
 
 union task_union {

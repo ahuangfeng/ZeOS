@@ -131,9 +131,7 @@ int sys_fork()
   union task_union * tku_fill = (union task_union*) newPCB;
   // 5 push de hardware i 11 de SAVE_ALL + @handler --> ponemos en -18
   tku_fill->stack[KERNEL_STACK_SIZE-18] = (unsigned long)&ret_from_fork;
-  // printk(";12");
   tku_fill->stack[KERNEL_STACK_SIZE-19] = 0;
-  // printk(";13");
   tku_fill->task.proces_esp = (unsigned long*)&(tku_fill->stack[KERNEL_STACK_SIZE-19]);
   newPCB->state = ST_READY;
   //i
@@ -142,10 +140,6 @@ int sys_fork()
   //reinicia las stats del hijo
   init_stats(newPCB);
   // int i = currentPCB->stadisticas.elapsed_total_ticks;
-  // char h[10];
-  // itoa(i,h);
-  // printk(h);
-  // printk("444");
 
   return PID;
 }
@@ -160,7 +154,57 @@ void init_stats(struct task_struct *current){
   current->stadisticas.user_ticks = 0;
 }
 
+void sys_clone(void (*function) (void), void *stack){
+  int PID=-1;
+  //a
+  if(list_empty(&freequeue)) return -ENOMEM; //out of memory
 
+  struct list_head *new_listPointer = list_first(&freequeue);
+  list_del(new_listPointer);
+
+  struct task_struct * newPCB = list_head_to_task_struct(new_listPointer);
+  struct task_struct * currentPCB = current();
+  union task_union * tku_fill = (union task_union*) newPCB;
+
+  //b
+  copy_data(currentPCB, newPCB, 4096); //4096 bytes
+  newPCB->thread_parent = currentPCB;
+
+  tku_fill->stack[KERNEL_STACK_SIZE-2] = (unsigned long)stack;
+  tku_fill->stack[KERNEL_STACK_SIZE-5] = (unsigned long)function;
+
+  //c
+  allocate_DIR(newPCB);
+
+  //d
+  //Inicializacion de paginas en padre
+  page_table_entry * pare_PT =  get_PT(currentPCB); //pare
+  page_table_entry * dir_current = get_DIR(currentPCB);
+
+  page_table_entry * fill_PT = get_PT(newPCB); //fill
+  set_cr3(dir_current);
+
+  //f
+  PID = ultimPID;
+  ultimPID++;
+  newPCB->PID = PID;
+  newPCB->quantum = 10;
+
+  //h
+  // 5 push de hardware i 11 de SAVE_ALL + @handler --> ponemos en -18
+  tku_fill->stack[KERNEL_STACK_SIZE-18] = &ret_from_fork;
+  tku_fill->stack[KERNEL_STACK_SIZE-19] = 0;
+  tku_fill->task.proces_esp = (unsigned long*)&(tku_fill->stack[KERNEL_STACK_SIZE-19]);
+  newPCB->state = ST_READY;
+  //i
+  list_add_tail(&(newPCB->list),&readyqueue);
+
+  //reinicia las stats del hijo
+  init_stats(newPCB);
+  // int i = currentPCB->stadisticas.elapsed_total_ticks;
+
+  return PID;
+}
 
 void sys_exit()
 {

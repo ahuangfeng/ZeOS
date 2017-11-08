@@ -119,7 +119,7 @@ void keyboard_routine(){
   unsigned char num = inb(0x60);
   char mask = 0x80;
   char pressed = num & mask;
-  pressed = pressed >> 7; // confirm with gdb
+  pressed = pressed >> 7; 
   if(pressed){
     num = num & 0x7F;
     int valNum = (int) num;

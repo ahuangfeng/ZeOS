@@ -45,11 +45,14 @@ page_table_entry * get_PT (struct task_struct *t)
 int allocate_DIR(struct task_struct *t)
 {
 	int pos;
-
-	pos = ((int)t-(int)task)/sizeof(union task_union);
-
-	t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos];
-
+	if(t->thread_parent != NULL){
+		//TODO: si se fuere el padre, el hijo no funciona!
+		//hay que poner una lista de directorio...--> a verlo
+		t->dir_pages_baseAddr = t->thread_parent->dir_pages_baseAddr;
+	}else{
+		pos = ((int)t-(int)task)/sizeof(union task_union);
+		t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos];
+	}
 	return 1;
 }
 

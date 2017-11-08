@@ -98,6 +98,21 @@ int get_stats(int pid, struct stats *st){
 	}
 }
 
+int clone(void (*function) (void), void *stack){
+	volatile int ret;
+	__asm__ volatile(
+		"int $0x80;"
+		: "=a"(ret) //output in ret
+		: "a"(19), "b"(function), "c"(stack)
+		:);
+	if (ret >= 0){
+		return ret;
+	}else{
+		errno = -ret;
+		return -1;
+	}
+}
+
 void exit(void) {
 	// write(1,"-->Exit\n",8);
 	__asm__ volatile(

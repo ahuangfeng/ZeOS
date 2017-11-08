@@ -89,17 +89,29 @@ void test_fork(){
 	}
 }
 
+void functionForClone(){
+	write(1,"Hola!!",6);
+	exit();
+}
+
+void test_clone(){
+	char pila[500];
+	clone(functionForClone,&pila);
+}
+
 int __attribute__ ((__section__(".text.main")))
   main(void)
 {
+
+	// test_write();
 	//test pid
 	// test_pid();
 
 	//test fork
 	// test_fork();
 
-	runjp();
-	
+	// runjp();
+	test_clone();
 	
 	
 	while(1){
