@@ -110,10 +110,9 @@ int __attribute__ ((__section__(".text.main")))
 	//test fork
 	// test_fork();
 
-	// runjp();
-	test_clone();
-	
-	
+	runjp();
+	// test_clone();
+	// exit();
 	while(1){
 		//nothing
 	}

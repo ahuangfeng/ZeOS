@@ -123,6 +123,66 @@ void exit(void) {
 		
 }
 
+int sem_init(int n_sem, unsigned int value){
+	volatile int ret;
+	__asm__ volatile(
+		"int $0x80;"
+		: "=a"(ret) //output in ret
+		: "a"(21), "b"(n_sem), "c"(value)
+		:);
+	if (ret >= 0){
+		return ret;
+	}else{
+		errno = -ret;
+		return -1;
+	}
+}
+
+int sem_wait(int n_sem){
+	volatile int ret;
+	__asm__ volatile(
+		"int $0x80;"
+		: "=a"(ret) //output in ret
+		: "a"(22), "b"(n_sem)
+		:);
+	if (ret >= 0){
+		return ret;
+	}else{
+		errno = -ret;
+		return -1;
+	}
+}
+
+int sem_signal(int n_sem){
+	volatile int ret;
+	__asm__ volatile(
+		"int $0x80;"
+		: "=a"(ret) //output in ret
+		: "a"(23), "b"(n_sem)
+		:);
+	if (ret >= 0){
+		return ret;
+	}else{
+		errno = -ret;
+		return -1;
+	}
+}
+
+int sem_destroy(int n_sem){
+	volatile int ret;
+	__asm__ volatile(
+		"int $0x80;"
+		: "=a"(ret) //output in ret
+		: "a"(24), "b"(n_sem)
+		:);
+	if (ret >= 0){
+		return ret;
+	}else{
+		errno = -ret;
+		return -1;
+	}
+}
+
 long long int gettime()
 {
 	long long int result = 0;

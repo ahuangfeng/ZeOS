@@ -12,8 +12,10 @@
 
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024
+#define NR_SEMAPHORES 20
 
 extern int ultimPID;
+extern int directories_refs[NR_TASKS];
 
 enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
 
@@ -26,11 +28,18 @@ struct task_struct {
   enum state_t state;
   struct stats stadisticas;
   struct task_struct *thread_parent;
+  int directory_ID;
 };
 
 union task_union {
   struct task_struct task;
   unsigned long stack[KERNEL_STACK_SIZE];    /* pila de sistema, per procés */
+};
+
+struct semaphore{
+  int counter;
+  struct list_head blocked_queue;
+  int pidOwner;
 };
 
 struct list_head freequeue;
@@ -39,6 +48,7 @@ struct list_head readyqueue;
 extern union task_union protected_tasks[NR_TASKS+2];
 extern union task_union *task; /* Vector de tasques */
 extern struct task_struct *idle_task;
+extern struct semaphore semaphore_list[NR_SEMAPHORES];
 
 
 #define KERNEL_ESP(t)       	(DWord) &(t)->stack[KERNEL_STACK_SIZE]
