@@ -240,7 +240,7 @@ void sys_exit()
 
 int sys_sem_init(int n_sem, unsigned int value){
   if(n_sem >= 20 || n_sem < 0) return -EINVAL;
-  if(semaphore_list[n_sem].pidOwner >= 0) return -EINVAL;
+  if(semaphore_list[n_sem].pidOwner >= 0) return -EBUSY;
 
   semaphore_list[n_sem].counter = value;
   semaphore_list[n_sem].pidOwner = current()->PID;
@@ -275,11 +275,11 @@ int sys_sem_signal(int n_sem){
 }
 
 int sys_sem_destroy(int n_sem){
-  
+
   if(n_sem >= 20 || n_sem < 0) return -EINVAL;
 
   if(semaphore_list[n_sem].pidOwner < 0) return -EINVAL;
-  
+
   int pidActual = current()->PID;
   if(pidActual == semaphore_list[n_sem].pidOwner){
     if(list_empty(&semaphore_list[n_sem].blocked_queue)){
