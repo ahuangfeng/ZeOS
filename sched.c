@@ -8,6 +8,9 @@
 
 int ultimPID;
 int quantum_restant = 0;
+int directories_refs[NR_TASKS];
+struct semaphore semaphore_list[NR_SEMAPHORES];
+
 /**
  * Container for the Task array and 2 additional pages (the first and the last one)
  * to protect against out of bound accesses.
@@ -45,11 +48,18 @@ page_table_entry * get_PT (struct task_struct *t)
 int allocate_DIR(struct task_struct *t)
 {
 	int pos;
-
-	pos = ((int)t-(int)task)/sizeof(union task_union);
-
-	t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos];
-
+	if(t->thread_parent != NULL){
+		//TODO: si se muere el padre, el hijo no funciona!
+		//hay que poner una lista de directorio...--> a verlot
+		t->directory_ID = t->thread_parent->directory_ID;
+		directories_refs[t->directory_ID]++;
+		t->dir_pages_baseAddr = t->thread_parent->dir_pages_baseAddr;
+	}else{
+		pos = ((int)t-(int)task)/sizeof(union task_union);
+		t->directory_ID = pos;
+		directories_refs[pos] += 1;
+		t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos];
+	}
 	return 1;
 }
 
@@ -91,7 +101,7 @@ void sched_next_rr(){
 	if(!list_empty(&readyqueue)){
 		struct list_head * nou_list;
 		nou_list = list_first(&readyqueue);
-    list_del(nou_list);
+		list_del(nou_list);
 		nou_tku = list_head_to_task_struct(nou_list);
 	}else{
 		nou_tku = idle_task;
@@ -233,6 +243,18 @@ void init_task1(void)
 
 void init_sched(){
 	INIT_LIST_HEAD(&freequeue);
+
+	//inicializando las referencias de directorios
+	for(int i = 0; i<NR_TASKS ; i++){
+		directories_refs[i] = 0;
+	}
+
+	//inicializando los semaforos
+	for(int i = 0; i<NR_SEMAPHORES ; i++){
+		INIT_LIST_HEAD(&semaphore_list[i].blocked_queue);
+		semaphore_list[i].counter = -1;
+		semaphore_list[i].pidOwner = -1;
+	}
 
 	for(int i = 0; i<NR_TASKS; i++){
 		list_add_tail(&task[i].task.list,&freequeue);

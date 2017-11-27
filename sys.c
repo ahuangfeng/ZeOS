@@ -133,9 +133,7 @@ int sys_fork()
   union task_union * tku_fill = (union task_union*) newPCB;
   // 5 push de hardware i 11 de SAVE_ALL + @handler --> ponemos en -18
   tku_fill->stack[KERNEL_STACK_SIZE-18] = (unsigned long)&ret_from_fork;
-  // printk(";12");
   tku_fill->stack[KERNEL_STACK_SIZE-19] = 0;
-  // printk(";13");
   tku_fill->task.proces_esp = (unsigned long*)&(tku_fill->stack[KERNEL_STACK_SIZE-19]);
   newPCB->state = ST_READY;
   //i
@@ -144,10 +142,6 @@ int sys_fork()
   //reinicia las stats del hijo
   init_stats(newPCB);
   // int i = currentPCB->stadisticas.elapsed_total_ticks;
-  // char h[10];
-  // itoa(i,h);
-  // printk(h);
-  // printk("444");
 
   return PID;
 }
@@ -162,18 +156,72 @@ void init_stats(struct task_struct *current){
   current->stadisticas.user_ticks = 0;
 }
 
+void sys_clone(void (*function) (void), void *stack){
+  int PID=-1;
+  //a
+  if(list_empty(&freequeue)) return -ENOMEM; //out of memory
 
+  struct list_head *new_listPointer = list_first(&freequeue);
+  list_del(new_listPointer);
+
+  struct task_struct * newPCB = list_head_to_task_struct(new_listPointer);
+  struct task_struct * currentPCB = current();
+  union task_union * tku_fill = (union task_union*) newPCB;
+
+  //b
+  copy_data(currentPCB, newPCB, 4096); //4096 bytes
+  newPCB->thread_parent = currentPCB;
+
+  tku_fill->stack[KERNEL_STACK_SIZE-2] = (unsigned long)stack;
+  tku_fill->stack[KERNEL_STACK_SIZE-5] = (unsigned long)function;
+
+  //c
+  allocate_DIR(newPCB);
+
+  //d
+  //Inicializacion de paginas en padre
+  page_table_entry * pare_PT =  get_PT(currentPCB); //pare
+  page_table_entry * dir_current = get_DIR(currentPCB);
+
+  page_table_entry * fill_PT = get_PT(newPCB); //fill
+  set_cr3(dir_current);
+
+  //f
+  PID = ultimPID;
+  ultimPID++;
+  newPCB->PID = PID;
+  newPCB->quantum = 10;
+
+  //h
+  // 5 push de hardware i 11 de SAVE_ALL + @handler --> ponemos en -18
+  tku_fill->stack[KERNEL_STACK_SIZE-18] = &ret_from_fork;
+  tku_fill->stack[KERNEL_STACK_SIZE-19] = 0;
+  tku_fill->task.proces_esp = (unsigned long*)&(tku_fill->stack[KERNEL_STACK_SIZE-19]);
+  newPCB->state = ST_READY;
+  //i
+  list_add_tail(&(newPCB->list),&readyqueue);
+
+  //reinicia las stats del hijo
+  init_stats(newPCB);
+  // int i = currentPCB->stadisticas.elapsed_total_ticks;
+
+  return PID;
+}
 
 void sys_exit()
 {
   page_table_entry *pt_current = get_PT(current());
 
-  //data user
-  for (int i = 0; i < NUM_PAG_DATA; i++) {
-    free_frame(get_frame(pt_current, PAG_LOG_INIT_DATA+i));
-    del_ss_pag(pt_current, PAG_LOG_INIT_DATA+i);
+  directories_refs[current()->directory_ID]--;
+  if(directories_refs[current()->directory_ID] == 0){
+    //data user
+    for (int i = 0; i < NUM_PAG_DATA; i++) {
+      free_frame(get_frame(pt_current, PAG_LOG_INIT_DATA+i));
+      del_ss_pag(pt_current, PAG_LOG_INIT_DATA+i);
+    }
   }
-//  printk("Hola");
+
+  //  printk("Hola");
   // int pag;
   // // code user
   // for (pag=0;pag < NUM_PAG_CODE;pag++){
@@ -188,6 +236,67 @@ void sys_exit()
   current()->PID = -1;
   sched_next_rr();
   // printk("Exx");
+}
+
+int sys_sem_init(int n_sem, unsigned int value){
+  if(n_sem >= 20 || n_sem < 0) return -EINVAL;
+  if(semaphore_list[n_sem].pidOwner >= 0) return -EINVAL;
+
+  semaphore_list[n_sem].counter = value;
+  semaphore_list[n_sem].pidOwner = current()->PID;
+
+  return 0;
+  //la blocked_queue ya esta inicializada en init_sched()
+}
+
+int sys_sem_wait(int n_sem){
+  if(n_sem >= 20 || n_sem < 0) return -EINVAL;
+  if(semaphore_list[n_sem].pidOwner < 0) return -EINVAL;
+  if(semaphore_list[n_sem].counter<=0){
+    list_del(&current()->list);
+    list_add_tail(&current()->list,&semaphore_list[n_sem].blocked_queue);
+  }else{
+    semaphore_list[n_sem].counter--;
+  }
+  return 0;
+}
+
+int sys_sem_signal(int n_sem){
+  if(n_sem >= 20 || n_sem < 0) return -EINVAL;
+  if(semaphore_list[n_sem].pidOwner < 0) return -EINVAL;
+  if(list_empty(&semaphore_list[n_sem].blocked_queue)){
+    semaphore_list[n_sem].counter++;
+  }else{
+    struct list_head * e = list_first( &semaphore_list[n_sem].blocked_queue );
+    list_del(e);
+    list_add_tail(e,&readyqueue);
+  }
+  return 0;
+}
+
+int sys_sem_destroy(int n_sem){
+  
+  if(n_sem >= 20 || n_sem < 0) return -EINVAL;
+
+  if(semaphore_list[n_sem].pidOwner < 0) return -EINVAL;
+  
+  int pidActual = current()->PID;
+  if(pidActual == semaphore_list[n_sem].pidOwner){
+    if(list_empty(&semaphore_list[n_sem].blocked_queue)){
+      semaphore_list[n_sem].counter = -1;
+      semaphore_list[n_sem].pidOwner = -1;
+      return 0;
+    }else{
+      struct list_head * e;
+      struct list_head * pos;
+      list_for_each_safe(pos, e, &semaphore_list[n_sem].blocked_queue){
+        list_del(pos);
+        list_add_tail(pos,&readyqueue);
+      }
+      return -1;
+    }
+  }
+  return -EINVAL;
 }
 
 int sys_write(int fd, char * buffer, int size) {
