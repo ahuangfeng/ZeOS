@@ -11,6 +11,8 @@ int quantum_restant = 0;
 int directories_refs[NR_TASKS];
 struct semaphore semaphore_list[NR_SEMAPHORES];
 
+#define DEFAULT_QUANTUM 10
+
 /**
  * Container for the Task array and 2 additional pages (the first and the last one)
  * to protect against out of bound accesses.
@@ -163,7 +165,7 @@ void init_idle (void)
 	tku->stack[KERNEL_STACK_SIZE-2] = 0;
 	structura->proces_esp = &(tku->stack[KERNEL_STACK_SIZE-2]);
 
-	structura->quantum = 10;
+	structura->quantum = DEFAULT_QUANTUM;
 	idle_task = structura;
 	init_stats(structura);
 }
@@ -200,7 +202,7 @@ void inner_task_switch(union task_union * new){
 	__asm__ __volatile__(
 		"movl %%ebp, %0;"
 		: "=g"(oldtsk->proces_esp)
-		: 
+		:
 	);
 	// oldtsk->proces_esp = ebpAddres;
 	// unsigned long * newEbpAddress = newtsk->proces_esp;
@@ -234,6 +236,8 @@ void init_task1(void)
 
 	allocate_DIR(mi_estructura);
 	set_user_pages(mi_estructura);
+
+  mi_estructura->quantum = DEFAULT_QUANTUM;
 
 	tss.esp0 = (DWord) &(tku->stack[KERNEL_STACK_SIZE]);
 	set_cr3(get_DIR(mi_estructura));
