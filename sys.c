@@ -28,7 +28,6 @@ extern int quantum_restant;
 //TODO:- needs_sched: cal actualitzar nombre de canvis READY a RUN si feu optimitzacio
 //TODO: - init_task1: cal inicialitzar quantum del proces i estat
 //TODO: - get_stats: el remaining quantum d'un proces en execució hauria de ser el que li queda per executar, es a dir 'quantum_restant'
-//TODO: - sys_fork: l'herencia del quantum vol dir que heu de mantenir el quantum del pare (sense resetejar-lo)
 
 int check_fd(int fd, int permissions)
 {

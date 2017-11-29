@@ -93,6 +93,7 @@ int needs_sched_rr(void){
 			return 1;
 		}
 		quantum_restant = get_quantum(current());
+    current()->stadisticas.total_trans++;
 	}
 	return 0;
 }
@@ -118,9 +119,11 @@ void sched_next_rr(){
 	current()->stadisticas.elapsed_total_ticks = current_ticks;
 
 	//actualitzar el new
-	nou_tku->stadisticas.total_trans++;
+
 	nou_tku->stadisticas.ready_ticks += current_ticks-(nou_tku->stadisticas.elapsed_total_ticks);
 	nou_tku->stadisticas.elapsed_total_ticks = current_ticks;
+
+  nou_tku->stadisticas.total_trans++;
 
 	task_switch((union task_union *) nou_tku);
 
