@@ -77,6 +77,13 @@ ENTRY(keyboard_handler);
       RESTORE_ALL;
       IRET;
 
+ENTRY(page_fault_handler_)
+      SAVE_ALL
+      call page_fault_routine_bis;
+      movl %eax, 0x18(%esp);
+      RESTORE_ALL
+      iret;
+
 ENTRY(clock_handler);
       SAVE_ALL;
       EOI;

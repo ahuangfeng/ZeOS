@@ -195,7 +195,7 @@ long long int gettime()
 	return result;
 }
 
-void writeNumber(char * message,int a ){
+void writeNumber(char * message, int a ){
 	char res[10];
 	itoa(a,res);
 	write(1,message,strlen(message));

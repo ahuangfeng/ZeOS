@@ -251,7 +251,6 @@ void init_sched(){
 
 	//inicializando los semaforos
 	for(int i = 0; i<NR_SEMAPHORES ; i++){
-		INIT_LIST_HEAD(&semaphore_list[i].blocked_queue);
 		semaphore_list[i].counter = -1;
 		semaphore_list[i].pidOwner = -1;
 	}

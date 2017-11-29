@@ -31,7 +31,7 @@
 00000000000i[      ]   SB16 support: no
 00000000000i[      ]   USB support: no
 00000000000i[      ]   VGA extension support: vbe
-00000000000i[MEM0  ] allocated memory at 0x7f34554dd010. after alignment, vector=0x7f34554de000
+00000000000i[MEM0  ] allocated memory at 0x7fc05a272010. after alignment, vector=0x7fc05a273000
 00000000000i[MEM0  ] 16.00MB
 00000000000i[MEM0  ] mem block size = 0x00100000, blocks=16
 00000000000i[MEM0  ] rom at 0xfffe0000/131072 ('/opt/bochs_gdb/share/bochs/BIOS-bochs-latest')
@@ -41,7 +41,7 @@
 00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 1, function 0
 00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
 00000000000i[CMOS  ] Using local time for initial clock
-00000000000i[CMOS  ] Setting initial clock to: Wed Nov 22 16:55:33 2017 (time0=1511366133)
+00000000000i[CMOS  ] Setting initial clock to: Wed Nov 29 17:26:51 2017 (time0=1511972811)
 00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
 00000000000i[DMA   ] channel 4 used by cascade
 00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
@@ -167,38 +167,39 @@
 00001529176i[BXVGA ] VBE known Display Interface b0c0
 00001529208i[BXVGA ] VBE known Display Interface b0c5
 00001532133i[VBIOS ] VBE Bios $Id: vbe.c,v 1.65 2014/07/08 18:02:25 vruppert Exp $
-00014040191i[BIOS  ] Booting from 0000:7c00
-00025506640i[XGUI  ] charmap update. Font Height is 16
-00030710550i[FLOPPY] partial read() on floppy image returns 192/512
-00030754994i[FLOPPY] read() on floppy image returns 0
-00030799438i[FLOPPY] read() on floppy image returns 0
-00030845636i[FLOPPY] read() on floppy image returns 0
-00030890080i[FLOPPY] read() on floppy image returns 0
-00030934524i[FLOPPY] read() on floppy image returns 0
-00030978968i[FLOPPY] read() on floppy image returns 0
-00031023412i[FLOPPY] read() on floppy image returns 0
-00031067856i[FLOPPY] read() on floppy image returns 0
-00031112300i[FLOPPY] read() on floppy image returns 0
-04900164000p[XGUI  ] >>PANIC<< POWER button turned off.
-04900164000i[CPU0  ] CPU is in protected mode (active)
-04900164000i[CPU0  ] CS.mode = 32 bit
-04900164000i[CPU0  ] SS.mode = 32 bit
-04900164000i[CPU0  ] EFER   = 0x00000000
-04900164000i[CPU0  ] | EAX=00000000  EBX=000142d4  ECX=0000000a  EDX=0000000a
-04900164000i[CPU0  ] | ESP=00017f4c  EBP=00017f54  ESI=000e0200  EDI=00003ff4
-04900164000i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df if tf sf zf af pf cf
-04900164000i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
-04900164000i[CPU0  ] |  CS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-04900164000i[CPU0  ] |  DS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-04900164000i[CPU0  ] |  SS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-04900164000i[CPU0  ] |  ES:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-04900164000i[CPU0  ] |  FS:0000( 0000| 0|  0) 00000000 00000000 0 0
-04900164000i[CPU0  ] |  GS:0000( 0000| 0|  0) 00000000 00000000 0 0
-04900164000i[CPU0  ] | EIP=00011f33 (00011f33)
-04900164000i[CPU0  ] | CR0=0x80000011 CR2=0x00000004
-04900164000i[CPU0  ] | CR3=0x0002c000 CR4=0x00000000
-04900164000i[CPU0  ] 0x00011f33>> jmp .-2 (0x00011f33) : EBFE
-04900164000i[CMOS  ] Last time is 1511367358 (Wed Nov 22 17:15:58 2017)
-04900164000i[XGUI  ] Exit
-04900164000i[      ] restoring default signal behavior
-04900164000i[SIM   ] quit_sim called with exit code 1
+00014040199i[BIOS  ] Booting from 0000:7c00
+00030710558i[FLOPPY] partial read() on floppy image returns 260/512
+00030755002i[FLOPPY] read() on floppy image returns 0
+00030799446i[FLOPPY] read() on floppy image returns 0
+00030845644i[FLOPPY] read() on floppy image returns 0
+00030890088i[FLOPPY] read() on floppy image returns 0
+00030934532i[FLOPPY] read() on floppy image returns 0
+00030978976i[FLOPPY] read() on floppy image returns 0
+00031023420i[FLOPPY] read() on floppy image returns 0
+00031067864i[FLOPPY] read() on floppy image returns 0
+00031112308i[FLOPPY] read() on floppy image returns 0
+00031487189e[CPU0  ] check_cs(0x1be4): not a valid code segment !
+00051833472i[XGUI  ] charmap update. Font Height is 16
+00631980000p[XGUI  ] >>PANIC<< POWER button turned off.
+00631980000i[CPU0  ] CPU is in protected mode (active)
+00631980000i[CPU0  ] CS.mode = 32 bit
+00631980000i[CPU0  ] SS.mode = 32 bit
+00631980000i[CPU0  ] EFER   = 0x00000000
+00631980000i[CPU0  ] | EAX=00000000  EBX=00018008  ECX=0000000e  EDX=0000000a
+00631980000i[CPU0  ] | ESP=00017f2c  EBP=00017f34  ESI=000143d4  EDI=00018008
+00631980000i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df if tf sf zf af pf cf
+00631980000i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
+00631980000i[CPU0  ] |  CS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+00631980000i[CPU0  ] |  DS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
+00631980000i[CPU0  ] |  SS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
+00631980000i[CPU0  ] |  ES:0018( 0003| 0|  0) 00000000 ffffffff 1 1
+00631980000i[CPU0  ] |  FS:0000( 0000| 0|  0) 00000000 00000000 0 0
+00631980000i[CPU0  ] |  GS:0000( 0000| 0|  0) 00000000 00000000 0 0
+00631980000i[CPU0  ] | EIP=00011fc3 (00011fc3)
+00631980000i[CPU0  ] | CR0=0x80000011 CR2=0x00000000
+00631980000i[CPU0  ] | CR3=0x0002c000 CR4=0x00000000
+00631980000i[CPU0  ] 0x00011fc3>> jmp .-2 (0x00011fc3) : EBFE
+00631980000i[CMOS  ] Last time is 1511972968 (Wed Nov 29 17:29:28 2017)
+00631980000i[XGUI  ] Exit
+00631980000i[      ] restoring default signal behavior
+00631980000i[SIM   ] quit_sim called with exit code 1

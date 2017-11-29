@@ -99,6 +99,22 @@ void test_clone(){
 	clone(functionForClone,&pila);
 }
 
+void test_sem(){
+	sem_init(1, 1);
+	int pid = fork();
+	if(pid == 0){
+		int err = sem_destroy(1);
+		perror();
+		writeNumber("error:",err);
+		write(1,"hijo",4);
+	}else{
+		int err = sem_destroy(1);
+		perror();
+		writeNumber("error:",err);
+		write(1,"Padre",5);
+	}
+}
+
 int __attribute__ ((__section__(".text.main")))
   main(void)
 {
@@ -110,7 +126,10 @@ int __attribute__ ((__section__(".text.main")))
 	//test fork
 	// test_fork();
 
+	// runjp_rank(14,16);
 	runjp();
+	write(1,"hola",4);
+	// test_sem();
 	// test_clone();
 	// exit();
 	while(1){

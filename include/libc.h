@@ -17,6 +17,7 @@ int strlen(char *a);
 int getpid();
 
 int fork();
+void writeNumber(char * message, int a );
 
 void exit();
 

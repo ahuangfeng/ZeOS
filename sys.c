@@ -25,6 +25,10 @@
 #define TAMANYBUFF 4
 
 extern int quantum_restant;
+//TODO:- needs_sched: cal actualitzar nombre de canvis READY a RUN si feu optimitzacio 
+//TODO: - init_task1: cal inicialitzar quantum del proces i estat 
+//TODO: - get_stats: el remaining quantum d'un proces en execució hauria de ser el que li queda per executar, es a dir 'quantum_restant'
+//TODO: - sys_fork: l'herencia del quantum vol dir que heu de mantenir el quantum del pare (sense resetejar-lo) 
 
 int check_fd(int fd, int permissions)
 {
@@ -212,6 +216,12 @@ void sys_exit()
 {
   page_table_entry *pt_current = get_PT(current());
 
+  for( int i = 0; i<NR_SEMAPHORES; i++){
+    if(semaphore_list[i].pidOwner == current()->PID){
+      sys_sem_destroy(i);
+    }
+  }
+
   directories_refs[current()->directory_ID]--;
   if(directories_refs[current()->directory_ID] == 0){
     //data user
@@ -235,7 +245,6 @@ void sys_exit()
   list_add_tail(&current()->list, &freequeue);
   current()->PID = -1;
   sched_next_rr();
-  // printk("Exx");
 }
 
 int sys_sem_init(int n_sem, unsigned int value){
@@ -244,31 +253,34 @@ int sys_sem_init(int n_sem, unsigned int value){
 
   semaphore_list[n_sem].counter = value;
   semaphore_list[n_sem].pidOwner = current()->PID;
+  INIT_LIST_HEAD(&semaphore_list[n_sem].blocked_queue);
 
   return 0;
-  //la blocked_queue ya esta inicializada en init_sched()
 }
 
 int sys_sem_wait(int n_sem){
   if(n_sem >= 20 || n_sem < 0) return -EINVAL;
   if(semaphore_list[n_sem].pidOwner < 0) return -EINVAL;
-  if(semaphore_list[n_sem].counter<=0){
-    list_del(&current()->list);
+  
+  semaphore_list[n_sem].counter--;
+  if(semaphore_list[n_sem].counter<0){
     list_add_tail(&current()->list,&semaphore_list[n_sem].blocked_queue);
-  }else{
-    semaphore_list[n_sem].counter--;
   }
+
+  if(semaphore_list[n_sem].pidOwner < 0) return -EINVAL;
+
   return 0;
 }
 
 int sys_sem_signal(int n_sem){
   if(n_sem >= 20 || n_sem < 0) return -EINVAL;
   if(semaphore_list[n_sem].pidOwner < 0) return -EINVAL;
-  if(list_empty(&semaphore_list[n_sem].blocked_queue)){
-    semaphore_list[n_sem].counter++;
-  }else{
+
+  semaphore_list[n_sem].counter++;
+  // !list_empty(&semaphore_list[n_sem].blocked_queue)
+  if(semaphore_list[n_sem].counter<=0){
     struct list_head * e = list_first( &semaphore_list[n_sem].blocked_queue );
-    list_del(e);
+    // list_del(e);
     list_add_tail(e,&readyqueue);
   }
   return 0;
@@ -283,20 +295,38 @@ int sys_sem_destroy(int n_sem){
   int pidActual = current()->PID;
   if(pidActual == semaphore_list[n_sem].pidOwner){
     if(list_empty(&semaphore_list[n_sem].blocked_queue)){
-      semaphore_list[n_sem].counter = -1;
+      // semaphore_list[n_sem].counter = -1;
       semaphore_list[n_sem].pidOwner = -1;
       return 0;
     }else{
       struct list_head * e;
       struct list_head * pos;
+      // while(!list_empty(&semaphore_list[n_sem].blocked_queue)){
+      //   e = list_first(&semaphore_list[n_sem].blocked_queue);
+      //   // list_del(e);
+      //   // struct task_struct *ts = list_head_to_task_struct(e);
+      //   // int pid = ts->PID;
+      //   // char buff[100];
+      //   // itoa(pid,buff);
+      //   // printk(buff);
+      //   list_add_tail(e,&readyqueue);        
+      // }
       list_for_each_safe(pos, e, &semaphore_list[n_sem].blocked_queue){
+        printk("\nHOLA");
         list_del(pos);
+        // struct task_struct *ts = list_head_to_task_struct(pos);
+        // int pid = ts->PID;
+        // char buff[100];
+        // itoa(pid,buff);
+        // printk(buff);
+        // printk("\n");
         list_add_tail(pos,&readyqueue);
       }
+      printk("Finished");
       return -1;
     }
   }
-  return -EINVAL;
+  return -EPERM;
 }
 
 int sys_write(int fd, char * buffer, int size) {
