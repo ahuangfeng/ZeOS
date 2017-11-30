@@ -111,7 +111,7 @@ void sched_next_rr(){
 	}
 	nou_tku->state = ST_RUN;
 	quantum_restant = get_quantum(nou_tku);
-	nou_tku->stadisticas.remaining_ticks = quantum_restant;
+	nou_tku->stadisticas.remaining_ticks = quantum_restant; 
 
 	unsigned long current_ticks = get_ticks();
 	//actualitzar el old
@@ -123,7 +123,7 @@ void sched_next_rr(){
 	nou_tku->stadisticas.ready_ticks += current_ticks-(nou_tku->stadisticas.elapsed_total_ticks);
 	nou_tku->stadisticas.elapsed_total_ticks = current_ticks;
 
-  nou_tku->stadisticas.total_trans++;
+  	nou_tku->stadisticas.total_trans++;
 
 	task_switch((union task_union *) nou_tku);
 
@@ -240,12 +240,11 @@ void init_task1(void)
 	allocate_DIR(mi_estructura);
 	set_user_pages(mi_estructura);
 
-  mi_estructura->quantum = DEFAULT_QUANTUM;
+  	mi_estructura->quantum = DEFAULT_QUANTUM;
 
 	tss.esp0 = (DWord) &(tku->stack[KERNEL_STACK_SIZE]);
 	set_cr3(get_DIR(mi_estructura));
-	// mi_estructura->state = ST_RUN;
-	// mi_estructura->quantum = 10;
+	mi_estructura->state = ST_RUN;
 }
 
 void init_sched(){
@@ -267,7 +266,7 @@ void init_sched(){
 		init_stats(&task[i].task);
 	}
 	//iniciar el quantum inicial
-	quantum_restant = 10;
+	quantum_restant = DEFAULT_QUANTUM;
 	INIT_LIST_HEAD(&readyqueue);
 }
 

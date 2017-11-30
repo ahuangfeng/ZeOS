@@ -25,9 +25,9 @@
 #define TAMANYBUFF 4
 
 extern int quantum_restant;
-//TODO:- needs_sched: cal actualitzar nombre de canvis READY a RUN si feu optimitzacio
-//TODO: - init_task1: cal inicialitzar quantum del proces i estat
-//TODO: - get_stats: el remaining quantum d'un proces en execució hauria de ser el que li queda per executar, es a dir 'quantum_restant'
+//TODO:- needs_sched: cal actualitzar nombre de canvis READY a RUN si feu optimitzacio ---> fet?
+//TODO: - init_task1: cal inicialitzar quantum del proces i estat--> fet?
+//TODO: - get_stats: el remaining quantum d'un proces en execució hauria de ser el que li queda per executar, es a dir 'quantum_restant' -->fet?
 
 int check_fd(int fd, int permissions)
 {
@@ -153,7 +153,7 @@ void init_stats(struct task_struct *current){
   current->stadisticas.blocked_ticks = 0;
   current->stadisticas.elapsed_total_ticks = get_ticks();
   current->stadisticas.ready_ticks = 0;
-  current->stadisticas.remaining_ticks = get_ticks();
+  current->stadisticas.remaining_ticks = get_quantum(current); //get_ticks();
   current->stadisticas.system_ticks = 0;
   current->stadisticas.total_trans = 0;
   current->stadisticas.user_ticks = 0;
