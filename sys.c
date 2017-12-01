@@ -25,9 +25,6 @@
 #define TAMANYBUFF 4
 
 extern int quantum_restant;
-//TODO:- needs_sched: cal actualitzar nombre de canvis READY a RUN si feu optimitzacio ---> fet?
-//TODO: - init_task1: cal inicialitzar quantum del proces i estat--> fet?
-//TODO: - get_stats: el remaining quantum d'un proces en execució hauria de ser el que li queda per executar, es a dir 'quantum_restant' -->fet?
 
 int check_fd(int fd, int permissions)
 {
@@ -161,6 +158,11 @@ void init_stats(struct task_struct *current){
 
 void sys_clone(void (*function) (void), void *stack){
   int PID=-1;
+
+  if(!access_ok(0,function,sizeof(void))) return -EFAULT;
+  if(!access_ok(0,stack,sizeof(void))) return -EFAULT;
+  // if(function == NULL) return -1;
+
   //a
   if(list_empty(&freequeue)) return -ENOMEM; //out of memory
 
@@ -172,22 +174,19 @@ void sys_clone(void (*function) (void), void *stack){
   union task_union * tku_fill = (union task_union*) newPCB;
 
   //b
-  copy_data(currentPCB, newPCB, 4096); //4096 bytes
-  newPCB->thread_parent = currentPCB;
-
-  tku_fill->stack[KERNEL_STACK_SIZE-2] = (unsigned long)stack;
-  tku_fill->stack[KERNEL_STACK_SIZE-5] = (unsigned long)function;
+  copy_data(currentPCB, newPCB, sizeof(union task_union)); //4096 bytes
 
   //c
-  allocate_DIR(newPCB);
+  // allocate_DIR(newPCB);
+
+  int pos = calculateDIR_ID(currentPCB);
+  directories_refs[pos]++;
+  // newPCB->dir_pages_baseAddr = &dir_pages[pos];
 
   //d
   //Inicializacion de paginas en padre
-  page_table_entry * pare_PT =  get_PT(currentPCB); //pare
-  page_table_entry * dir_current = get_DIR(currentPCB);
-
-  page_table_entry * fill_PT = get_PT(newPCB); //fill
-  set_cr3(dir_current);
+  // page_table_entry * dir_current = get_DIR(currentPCB);
+  // set_cr3(dir_current);
 
   //f
   PID = ultimPID;
@@ -197,6 +196,8 @@ void sys_clone(void (*function) (void), void *stack){
 
   //h
   // 5 push de hardware i 11 de SAVE_ALL + @handler --> ponemos en -18
+  tku_fill->stack[KERNEL_STACK_SIZE-2] = (unsigned long)stack;
+  tku_fill->stack[KERNEL_STACK_SIZE-5] = (unsigned long)function;
   tku_fill->stack[KERNEL_STACK_SIZE-18] = &ret_from_fork;
   tku_fill->stack[KERNEL_STACK_SIZE-19] = 0;
   tku_fill->task.proces_esp = (unsigned long*)&(tku_fill->stack[KERNEL_STACK_SIZE-19]);
@@ -221,26 +222,15 @@ void sys_exit()
     }
   }
 
-  directories_refs[current()->directory_ID]--;
-  if(directories_refs[current()->directory_ID] == 0){
+  int pos = calculateDIR_ID(current());
+  directories_refs[pos]--;
+  if(directories_refs[pos] == 0){
     //data user
     for (int i = 0; i < NUM_PAG_DATA; i++) {
       free_frame(get_frame(pt_current, PAG_LOG_INIT_DATA+i));
       del_ss_pag(pt_current, PAG_LOG_INIT_DATA+i);
     }
   }
-
-  //  printk("Hola");
-  // int pag;
-  // // code user
-  // for (pag=0;pag < NUM_PAG_CODE;pag++){
-  //   del_ss_pag(pt_current,PAG_LOG_INIT_CODE+pag);
-  // }
-
-  // //kernel
-  // for(pag = 0; pag < NUM_PAG_KERNEL; pag++){
-  //   del_ss_pag(pt_current,pag);
-  // }
   list_add_tail(&current()->list, &freequeue);
   current()->PID = -1;
   sched_next_rr();
@@ -264,6 +254,7 @@ int sys_sem_wait(int n_sem){
   semaphore_list[n_sem].counter--;
   if(semaphore_list[n_sem].counter<0){
     list_add_tail(&current()->list,&semaphore_list[n_sem].blocked_queue);
+    sched_next_rr();
   }
 
   if(semaphore_list[n_sem].pidOwner < 0) return -EINVAL;
@@ -279,8 +270,10 @@ int sys_sem_signal(int n_sem){
   // !list_empty(&semaphore_list[n_sem].blocked_queue)
   if(semaphore_list[n_sem].counter<=0){
     struct list_head * e = list_first( &semaphore_list[n_sem].blocked_queue );
-    // list_del(e);
+    list_del(e);
     list_add_tail(e,&readyqueue);
+    struct task_struct* tks = list_head_to_task_struct(e);
+    tks->state = ST_READY;
   }
   return 0;
 }
@@ -290,20 +283,18 @@ int sys_sem_destroy(int n_sem){
   if(semaphore_list[n_sem].pidOwner < 0) return -EINVAL;
 
   int pidActual = current()->PID;
-  if(pidActual != semaphore_list[n_sem].pidOwner) return -EINVAL;
+  if(pidActual != semaphore_list[n_sem].pidOwner) return -EPERM;
 
   if(!list_empty(&semaphore_list[n_sem].blocked_queue)){
     struct list_head * e;
     struct list_head * pos;
     list_for_each_safe(pos, e, &semaphore_list[n_sem].blocked_queue){
-      printk("\nHOLA");
       list_del(pos);
       list_add_tail(pos,&readyqueue);
+      struct task_struct* tks = list_head_to_task_struct(pos);
+      tks->state = ST_READY;
     }
-    printk("Finished");
-    return -EPERM;
   }
-
   semaphore_list[n_sem].pidOwner = -1;
   return 0;
 }

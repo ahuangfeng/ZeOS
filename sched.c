@@ -46,21 +46,19 @@ page_table_entry * get_PT (struct task_struct *t)
 	return (page_table_entry *)(((unsigned int)(t->dir_pages_baseAddr->bits.pbase_addr))<<12);
 }
 
+int calculateDIR_ID(struct task_struct *t){
+	int pos = ((int)t->dir_pages_baseAddr-(int)&dir_pages[0])/sizeof(dir_pages[0]);
+	return pos;
+}
 
 int allocate_DIR(struct task_struct *t)
 {
-	int pos;
-	if(t->thread_parent != NULL){
-		//TODO: si se muere el padre, el hijo no funciona!
-		//hay que poner una lista de directorio...--> a verlot
-		t->directory_ID = t->thread_parent->directory_ID;
-		directories_refs[t->directory_ID]++;
-		t->dir_pages_baseAddr = t->thread_parent->dir_pages_baseAddr;
-	}else{
-		pos = ((int)t-(int)task)/sizeof(union task_union);
-		t->directory_ID = pos;
-		directories_refs[pos] += 1;
-		t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos];
+	for(int i = 0; i<NR_TASKS ; i++){
+		if(directories_refs[i] == 0){
+			directories_refs[i] += 1;
+			t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[i];
+			return 1;
+		}
 	}
 	return 1;
 }
@@ -137,6 +135,8 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest){
 		list_add_tail(&(t->list),dest);
 		if(dest == &readyqueue){
 			t->state = ST_READY;
+		}else{
+			t->state = ST_BLOCKED;
 		}
 	}else{
 		t->state = ST_RUN;

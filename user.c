@@ -126,15 +126,15 @@ int __attribute__ ((__section__(".text.main")))
 	//test fork
 	// test_fork();
 
-	// runjp_rank(14,16);
-	runjp();
-	write(1,"hola",4);
+	runjp_rank(7,9);
+	// runjp();
+	// write(1,"hola",4);
 	// test_sem();
 	// test_clone();
 	// exit();
 	while(1){
 		//nothing
 	}
-
+	//TODO: 0x000110e2
   	return 0;
 }
