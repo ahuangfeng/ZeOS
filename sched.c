@@ -6,6 +6,7 @@
 #include <mm.h>
 #include <io.h>
 #include <errno.h>
+#include <declaracions.h>
 
 int ultimPID;
 int quantum_restant = 0;
@@ -21,9 +22,9 @@ struct semaphore semaphore_list[NR_SEMAPHORES];
 // - no passa tests clone: -->FET
 // - sys_clone: la funció a executar pot estar en algun lloc de l'espai d'adreces, no nomes a dades 
 // - sys_clone: ha de retornar un 'int' per poder retornar alguna cosa (eliminant warnings aixo no hauria passat) --> FET
-// - allocate_DIR: hauria de retornar un error o algo per indicar que no hi ha directoris disponibles 
+// - allocate_DIR: hauria de retornar un error o algo per indicar que no hi ha directoris disponibles --> FET
 // - sem_wait: que passa si es fa un sem_destroy i un sem_init seguits? 
-// - task_switch: si el proper PCB a executar és un thread del procés actual NO cal canviar l'espai d'adreces 
+// - task_switch: si el proper PCB a executar és un thread del procés actual NO cal canviar l'espai d'adreces -->FET TODO: Verificar linia 210
 
 /**
  * Container for the Task array and 2 additional pages (the first and the last one)
@@ -205,15 +206,18 @@ void task_switch(union task_union * new){
 
 void inner_task_switch(union task_union * new){
 	tss.esp0 = (DWord) &(new->stack[KERNEL_STACK_SIZE]);
-	set_cr3(get_DIR((struct task_struct *) new));
-
 	struct task_struct * oldtsk = current();
+	//TODO: Es así como se tiene que comparar si es un thread o no?
+	if(new->task.dir_pages_baseAddr != oldtsk->dir_pages_baseAddr){
+		set_cr3(get_DIR((struct task_struct *) new));
+	}
+
 	struct task_struct * newtsk = (struct task_struct *) new;
 
 	// void * oldEsp = old->proces_esp;
 	// void * newEsp = newtsk->proces_esp;
 
-	unsigned long * ebpAddres;
+	// unsigned long * ebpAddres;
 	__asm__ __volatile__(
 		"movl %%ebp, %0;"
 		: "=g"(oldtsk->proces_esp)

@@ -338,7 +338,6 @@ int sys_write(int fd, char * buffer, int size) {
 }
 
 int sys_get_stats(int pid, struct stats *st){
-  int ret = -1;
   if(pid < 0) return -EINVAL;
   if(!access_ok(VERIFY_WRITE,st,sizeof(struct stats))){
     return -EFAULT;

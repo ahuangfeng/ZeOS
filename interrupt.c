@@ -103,12 +103,12 @@ void setIdt()
 }
 
 void page_fault_routine_bis(){
-  int pageFault = tss.esp0;
+  // int pageFault = tss.esp0;
   struct task_struct* ts = current();
-  union task_union* tu = (union task_union*) ts;
+  // union task_union* tu = (union task_union*) ts;
   // int nbError = tu->stack[KERNEL_STACK_SIZE-5];
   int nbError = ts->proces_esp;
-  int stk = tu->stack[pageFault];
+  // int stk = tu->stack[pageFault];
   char ss[100];
   itoa(nbError,ss);
   printk("Page fault at ");

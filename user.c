@@ -1,26 +1,27 @@
 #include <libc.h>
+#include <declaracions.h>
 
 char buff[24];
 
 int pid;
 
 
-int add( int par1, int par2){
-	__asm__ __volatile__ (
-                "movl 0x8(%ebp), %eax;"
-                "addl 0xc(%ebp), %eax;"
-                //"add %edx, %eax;"
-    );
-    //return par1+par2;
-}
+// int add( int par1, int par2){
+// 	__asm__ __volatile__ (
+//                 "movl 0x8(%ebp), %eax;"
+//                 "addl 0xc(%ebp), %eax;"
+//                 //"add %edx, %eax;"
+//     );
+//     //return par1+par2;
+// }
 
 long inner(long n){
 	int i;
 	long suma;
 	suma = 0;
 	for( i=0; i<n; i++){
-		suma = add(suma,i);
-		//suma = suma +i;
+		// suma = add(suma,i);
+		suma = suma +i;
 	}
 	return suma;
 }
@@ -31,7 +32,8 @@ long outer(long n){
 	acum = 0;
 	for(i=0; i<n;i++){
 		int k = inner(i);
-		acum = add(acum,k);//acum + inner(i);
+		// acum = add(acum,k);//acum + inner(i);
+		acum = acum + k;
 	}
 	return acum;
 }
