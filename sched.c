@@ -5,6 +5,7 @@
 #include <sched.h>
 #include <mm.h>
 #include <io.h>
+#include <errno.h>
 
 int ultimPID;
 int quantum_restant = 0;
@@ -12,6 +13,17 @@ int directories_refs[NR_TASKS];
 struct semaphore semaphore_list[NR_SEMAPHORES];
 
 #define DEFAULT_QUANTUM 10
+
+//TODO: 
+// + passa tests E2 
+// + passa test semafors 
+// - hi ha warnings 
+// - no passa tests clone: -->FET
+// - sys_clone: la funció a executar pot estar en algun lloc de l'espai d'adreces, no nomes a dades 
+// - sys_clone: ha de retornar un 'int' per poder retornar alguna cosa (eliminant warnings aixo no hauria passat) --> FET
+// - allocate_DIR: hauria de retornar un error o algo per indicar que no hi ha directoris disponibles 
+// - sem_wait: que passa si es fa un sem_destroy i un sem_init seguits? 
+// - task_switch: si el proper PCB a executar és un thread del procés actual NO cal canviar l'espai d'adreces 
 
 /**
  * Container for the Task array and 2 additional pages (the first and the last one)
@@ -60,7 +72,7 @@ int allocate_DIR(struct task_struct *t)
 			return 1;
 		}
 	}
-	return 1;
+	return -ENOMEM;
 }
 
 void cpu_idle(void)

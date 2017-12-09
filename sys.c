@@ -63,7 +63,8 @@ int sys_fork()
   //b
   copy_data(currentPCB, newPCB, 4096); //4096 bytes
   //c
-  allocate_DIR(newPCB);
+  int err = allocate_DIR(newPCB);
+  if(err != 1) return err;
 
   //d
   //Inicializacion de paginas en padre
@@ -156,7 +157,7 @@ void init_stats(struct task_struct *current){
   current->stadisticas.user_ticks = 0;
 }
 
-void sys_clone(void (*function) (void), void *stack){
+int sys_clone(void (*function) (void), void *stack){
   int PID=-1;
 
   if(!access_ok(0,function,sizeof(void))) return -EFAULT;
