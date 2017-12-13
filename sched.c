@@ -7,6 +7,7 @@
 #include <io.h>
 #include <errno.h>
 #include <declaracions.h>
+#include <devices.h>
 
 int ultimPID;
 int quantum_restant = 0;
@@ -108,7 +109,6 @@ int needs_sched_rr(void){
 	}
 	return 0;
 }
-
 
 void sched_next_rr(){
 	struct task_struct * nou_tku;
@@ -265,7 +265,8 @@ void init_task1(void)
 
 void init_sched(){
 	INIT_LIST_HEAD(&freequeue);
-
+	INIT_LIST_HEAD(&keyboardqueue);
+	cb_init(&global_buff);
 	//inicializando las referencias de directorios
 	for(int i = 0; i<NR_TASKS ; i++){
 		directories_refs[i] = 0;

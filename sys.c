@@ -199,7 +199,7 @@ int sys_clone(void (*function) (void), void *stack){
   // 5 push de hardware i 11 de SAVE_ALL + @handler --> ponemos en -18
   tku_fill->stack[KERNEL_STACK_SIZE-2] = (unsigned long)stack;
   tku_fill->stack[KERNEL_STACK_SIZE-5] = (unsigned long)function;
-  tku_fill->stack[KERNEL_STACK_SIZE-18] = &ret_from_fork;
+  tku_fill->stack[KERNEL_STACK_SIZE-18] = (unsigned long)&ret_from_fork;
   tku_fill->stack[KERNEL_STACK_SIZE-19] = 0;
   tku_fill->task.proces_esp = (unsigned long*)&(tku_fill->stack[KERNEL_STACK_SIZE-19]);
   newPCB->state = ST_READY;
@@ -335,6 +335,37 @@ int sys_write(int fd, char * buffer, int size) {
   }
   return tamTotal;
 
+}
+
+int sys_read_keyboard(int fd, char* buf, int count){
+  //TODO: revisar parametros
+  if( count < 0) return -EINVAL;
+
+  if(!list_empty(&keyboardqueue)){
+    block(current(),TAIL);
+    sched_next_rr();
+  }else{
+    if(count < global_buff.size){
+      int i = 0;
+      while(i<count){
+        buf[i] = cb_pop(&global_buff);
+        i++;
+      }
+      return count;
+    }else if(global_buff.size >= BUFF_SIZE){
+      int i = 0;
+      while(i < BUFF_SIZE){
+        buf[i] = cb_pop(&global_buff);
+        i++;
+      }
+      block(current(),HEAD);
+      sched_next_rr();
+    }else{
+      block(current(),HEAD);
+      sched_next_rr();
+    }
+  }
+  return 0;
 }
 
 int sys_get_stats(int pid, struct stats *st){

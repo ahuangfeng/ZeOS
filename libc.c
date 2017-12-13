@@ -53,6 +53,21 @@ int write(int fd, char *buffer, int size)
 	return ret;
 }
 
+int read(int fd, char *buf, int count){
+	volatile int ret;
+	__asm__ volatile(
+		"int $0x80;"
+		: "=a"(ret) //output in ret
+		: "a"(5), "b"(fd), "c"(buf), "d"(count)
+		:);
+	if (ret >= 0){
+		return ret;
+	}else{
+		errno = -ret;
+		return -1;
+	}
+}
+
 int getpid(void)
 {
 	int ret;

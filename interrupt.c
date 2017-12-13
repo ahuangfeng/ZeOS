@@ -12,6 +12,7 @@
 
 #include <declaracions.h>
 #include <mm.h>
+#include <devices.h>
 
 Gate idt[IDT_ENTRIES];
 Register    idtR;
@@ -103,31 +104,28 @@ void setIdt()
 }
 
 void page_fault_routine_bis(){
-  // int pageFault = tss.esp0;
-  struct task_struct* ts = current();
-  // union task_union* tu = (union task_union*) ts;
-  // int nbError = tu->stack[KERNEL_STACK_SIZE-5];
-  int nbError = ts->proces_esp;
-  // int stk = tu->stack[pageFault];
-  char ss[100];
-  itoa(nbError,ss);
-  printk("Page fault at ");
-  printk(ss);
+  // // int pageFault = tss.esp0;
+  // struct task_struct* ts = current();
+  // // union task_union* tu = (union task_union*) ts;
+  // // int nbError = tu->stack[KERNEL_STACK_SIZE-5];
+  // int nbError = ts->proces_esp;
+  // // int stk = tu->stack[pageFault];
+  // char ss[100];
+  // itoa(nbError,ss);
+  // printk("Page fault at ");
+  // printk(ss);
 }
 
 void userToSystem_routine(){
   unsigned long current_ticks = get_ticks();
-  // printk("userToSystem");
   current()->stadisticas.user_ticks += current_ticks-(current()->stadisticas.elapsed_total_ticks);
   current()->stadisticas.elapsed_total_ticks = current_ticks;
-  // printk("userToSystem\n");
 }
 
 void systemToUser_routine(){
   unsigned long current_ticks = get_ticks();
   current()->stadisticas.system_ticks += current_ticks-(current()->stadisticas.elapsed_total_ticks);
   current()->stadisticas.elapsed_total_ticks = current_ticks;
-  // printk("systemToUser\n");
 }
 
 
@@ -142,14 +140,12 @@ void keyboard_routine(){
     char c = 'C';
     if(valNum < 98){
       c = char_map[valNum];
-      if(c == 'i'){ // task_switch
-        task_switch((union task_union *) idle_task);
-      }
     }
     if( c == '\0'){
       c = 'C';
     }
     printc_xy(0,0,c);
+    cb_push(&global_buff, c);
   }
 }
 

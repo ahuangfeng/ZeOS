@@ -28,6 +28,6 @@ int sem_wait(int n_sem);
 int sem_signal(int n_sem);
 int sem_destroy(int n_sem);
 long long int gettime();
-
+int read(int fd, char *buf, int count);
 
 #endif  /* __LIBC_H__ */
