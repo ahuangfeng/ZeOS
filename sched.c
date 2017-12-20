@@ -17,8 +17,6 @@ struct semaphore semaphore_list[NR_SEMAPHORES];
 #define DEFAULT_QUANTUM 10
 
 //TODO: 
-// + passa tests E2 
-// + passa test semafors 
 // - hi ha warnings 
 // - no passa tests clone: -->FET
 // - sys_clone: la funció a executar pot estar en algun lloc de l'espai d'adreces, no nomes a dades 

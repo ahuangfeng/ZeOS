@@ -18,6 +18,7 @@
 #include <libc.h>
 
 #include <errno.h>
+#include <system.h>
 
 #define LECTURA 0
 #define ESCRIPTURA 1
@@ -28,8 +29,9 @@ extern int quantum_restant;
 
 int check_fd(int fd, int permissions)
 {
-  if (fd!=1) return -9; /*EBADF*/
-  if (permissions!=ESCRIPTURA) return -13; /*EACCES*/
+  if (fd>1 || fd<0) return -EBADF; 
+  if (fd == 1 && permissions!=ESCRIPTURA) return -EACCES; 
+  if (fd == 0 && permissions!=LECTURA) return -EACCES; 
   return 0;
 }
 
@@ -71,10 +73,9 @@ int sys_fork()
   int frames[NUM_PAG_DATA];
   int pag;
   int new_ph_pag;
-  // printk("0");
+
   page_table_entry * pare_PT =  get_PT(currentPCB); //pare
   page_table_entry * dir_current = get_DIR(currentPCB);
-  // printk("1");
   /* frames for DATA */
   for (pag=0;pag<NUM_PAG_DATA;pag++){
     new_ph_pag=alloc_frame();
@@ -88,10 +89,7 @@ int sys_fork()
       frames[pag] = new_ph_pag;
     }
   }
-  // printk("2");
 
-
-  // printk("3");
   page_table_entry * fill_PT = get_PT(newPCB); //fill
   // printk("4");
 
@@ -337,34 +335,60 @@ int sys_write(int fd, char * buffer, int size) {
 
 }
 
-int sys_read_keyboard(int fd, char* buf, int count){
-  //TODO: revisar parametros
-  if( count < 0) return -EINVAL;
+int sys_read(int fd, char* buff, int count){
+  //check parameters!
 
+  if (buff == NULL) return -EFAULT;
+  if (count < 0) return -EINVAL;
+  if (count == 0) return 0; //es un valor válido pero no haremos nada
+  if (!access_ok(VERIFY_READ, buff, count)) return -EFAULT;
+  
+  int check = check_fd(fd,LECTURA);
+  if(check != 0) return check;
+
+  int res = sys_read_keyboard(buff, count);
+
+  return res;
+}
+
+int sys_read_keyboard(char* buff, int count){
+
+  int tmp_count = count;
   if(!list_empty(&keyboardqueue)){
     block(current(),TAIL);
     sched_next_rr();
-  }else{
-    if(count < global_buff.size){
+  }
+
+  while(tmp_count > 0){
+    if(tmp_count < global_buff.size){
       int i = 0;
       while(i<count){
-        buf[i] = cb_pop(&global_buff);
-        i++;
+        if(!cb_isEmpty(&global_buff)){
+          buff[i] = cb_pop(&global_buff);
+          i++;
+        }
       }
+      read_count = 0;
       return count;
     }else if(global_buff.size >= BUFF_SIZE){
       int i = 0;
       while(i < BUFF_SIZE){
-        buf[i] = cb_pop(&global_buff);
-        i++;
+        if(!cb_isEmpty(&global_buff)){
+          buff[i] = cb_pop(&global_buff);
+          i++;
+        }
       }
+      read_count = count - BUFF_SIZE;
+      tmp_count -= BUFF_SIZE;
       block(current(),HEAD);
       sched_next_rr();
     }else{
+      read_count = count;
       block(current(),HEAD);
       sched_next_rr();
     }
   }
+  
   return 0;
 }
 

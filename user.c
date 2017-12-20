@@ -117,6 +117,12 @@ void test_sem(){
 	}
 }
 
+void test_read(){
+	char buff[100];
+	read(0, buff, 5);
+	write(1,buff,5);
+}
+
 int __attribute__ ((__section__(".text.main")))
   main(void)
 {
@@ -129,7 +135,8 @@ int __attribute__ ((__section__(".text.main")))
 	// test_fork();
 
 	// runjp_rank(0,9);
-	runjp();
+	// runjp();
+	test_read();
 	// write(1,"hola",4);
 	// test_sem();
 	// test_clone();

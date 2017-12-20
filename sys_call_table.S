@@ -8,7 +8,7 @@ ENTRY (sys_call_table)
 	.long sys_fork // 2
 	.long sys_ni_syscall // 3
 	.long sys_write // 4
-	.long sys_read_keyboard // 5
+	.long sys_read // 5
 	.long sys_ni_syscall
 	.long sys_ni_syscall
 	.long sys_ni_syscall

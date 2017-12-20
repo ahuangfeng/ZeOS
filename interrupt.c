@@ -13,6 +13,7 @@
 #include <declaracions.h>
 #include <mm.h>
 #include <devices.h>
+#include <system.h>
 
 Gate idt[IDT_ENTRIES];
 Register    idtR;
@@ -145,7 +146,28 @@ void keyboard_routine(){
       c = 'C';
     }
     printc_xy(0,0,c);
+    // char buf[BUFF_SIZE];
+    // itoa(global_buff.size,buf);
+    // printk(buf);
     cb_push(&global_buff, c);
+    if(!list_empty(&keyboardqueue)){
+      // struct list_head * lh = list_first(&keyboardqueue);
+      // struct task_struct *tsk = list_head_to_task_struct(lh);
+
+      //  int abb = read_count;
+      //  int baa = global_buff.size;
+      // char buf[BUFF_SIZE];
+      // itoa(tsk->read_count,buf);
+      // printk(buf);
+      // printk("-");
+      // char buf2[BUFF_SIZE];
+      // itoa(global_buff.size,buf2);
+      // printk(buf2);
+      if((cb_isFull(&global_buff)) || (read_count <= global_buff.size)){
+        unblock();
+        // printk("Unblock");
+      }
+    }
   }
 }
 
