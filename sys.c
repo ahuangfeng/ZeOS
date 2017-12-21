@@ -29,9 +29,9 @@ extern int quantum_restant;
 
 int check_fd(int fd, int permissions)
 {
-  if (fd>1 || fd<0) return -EBADF; 
-  if (fd == 1 && permissions!=ESCRIPTURA) return -EACCES; 
-  if (fd == 0 && permissions!=LECTURA) return -EACCES; 
+  if (fd>1 || fd<0) return -EBADF;
+  if (fd == 1 && permissions!=ESCRIPTURA) return -EACCES;
+  if (fd == 0 && permissions!=LECTURA) return -EACCES;
   return 0;
 }
 
@@ -342,7 +342,7 @@ int sys_read(int fd, char* buff, int count){
   if (count < 0) return -EINVAL;
   if (count == 0) return 0; //es un valor válido pero no haremos nada
   if (!access_ok(VERIFY_READ, buff, count)) return -EFAULT;
-  
+
   int check = check_fd(fd,LECTURA);
   if(check != 0) return check;
 
@@ -352,7 +352,7 @@ int sys_read(int fd, char* buff, int count){
 }
 
 int sys_read_keyboard(char* buff, int count){
-
+  int err;
   int tmp_count = count;
   if(!list_empty(&keyboardqueue)){
     block(current(),TAIL);
@@ -360,17 +360,20 @@ int sys_read_keyboard(char* buff, int count){
   }
 
   while(tmp_count > 0){
-    if(tmp_count < global_buff.size){
-      int i = 0;
+    if(tmp_count <= global_buff.size){
+      err = copy_to_user(&global_buff, buff, count);
+      if(err < 0 ) return err;
+      sys_write_console(buff,count);
+      /*int i = 0;
       while(i<count){
         if(!cb_isEmpty(&global_buff)){
           buff[i] = cb_pop(&global_buff);
           i++;
         }
-      }
+      }*/
       read_count = 0;
-      return count;
-    }else if(global_buff.size >= BUFF_SIZE){
+      tmp_count = 0;
+    }else if(global_buff.size == BUFF_SIZE-1){
       int i = 0;
       while(i < BUFF_SIZE){
         if(!cb_isEmpty(&global_buff)){
@@ -388,8 +391,63 @@ int sys_read_keyboard(char* buff, int count){
       sched_next_rr();
     }
   }
-  
-  return 0;
+
+  return count;
+}
+
+void * sys_sbrk(int increment) {
+  int INIT_HEAP = PAG_LOG_INIT_DATA + NUM_PAG_DATA*PAGE_SIZE;
+
+  if (current()->heap_init == NULL) {
+    int fr = alloc_frame();
+    if (fr < 0) return fr;
+    set_ss_pag(get_PT(current()),INIT_HEAP/PAGE_SIZE,fr);
+    current()->heap_init = heap_init;
+    current()->numPagHeap = 1;
+  }
+
+  if (increment == 0) return (current()->heap_init + current()->heap_bytes);
+  else if (increment > 0) {
+    void *old = current()->heap_init + current()->heap_bytes;
+    if ((current()->heap_bytes)%PAGE_SIZE + increment < PAGE_SIZE) {
+    	current()->heap_bytes += increment;
+    }	else {
+    	current()->heap_bytes += increment;
+    	while ((current()->numPagHeap*PAGE_SIZE) < current()->heap_bytes) {
+    		int frame = alloc_frame();
+        // Si no hi ha frames disponibles, revertim
+    		if (frame < 0) {
+          current()->heap_bytes -= increment;
+    			while((current()->numPagHeap*PAGE_SIZE)-current()->heap_bytes > PAGE_SIZE) {
+            free_frame(get_frame(get_PT(current()), INIT_HEAP/PAGE_SIZE + current()->numPagHeap - 1));
+	    			del_ss_pag(get_PT(current()), ((INIT_HEAP/PAGE_SIZE) + current()->numPagHeap)- 1);
+	    			current()->numPagHeap--;
+	    		}
+    			return frame;
+    		}
+
+        set_ss_pag(get_PT(current()), ((INIT_HEAP/PAGE_SIZE) + current()->numPagHeap), frame);
+    		current()->numPagHeap++;
+    	}
+    }
+    return old;
+  else if (current()->heap_bytes + increment < 0) {
+    current()->heap_bytes = 0;
+    while((current()->numPagHeap) > 0) {
+    	free_frame(get_frame(get_PT(current()),INIT_HEAP/PAGE_SIZE + current()->numPagHeap -1 ));
+    	del_ss_pag(get_PT(current()), ((INIT_HEAP/PAGE_SIZE) + current()->numPagHeap) - 1);
+    	current()->numPagHeap--;
+    }
+    return current()->heap_start;
+  } else {
+    current()->heap_bytes += increment;
+  	while((current()->numPagHeap*PAGE_SIZE)-current()->heap_bytes > PAGE_SIZE) {
+  		free_frame(get_frame(get_PT(current()), HEAP_START/PAGE_SIZE + current()->numPagHeap -1));
+  		del_ss_pag(get_PT(current()), ((HEAP_START/PAGE_SIZE) + current()->numPagHeap) - 1);
+  		current()->numPagHeap--;
+  	}
+    return current()->heap_init + current()->heap_bytes;
+  }
 }
 
 int sys_get_stats(int pid, struct stats *st){

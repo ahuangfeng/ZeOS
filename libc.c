@@ -135,7 +135,7 @@ void exit(void) {
 		:
 		: "a"(1) // 2 in eax
 		:);
-		
+
 }
 
 int sem_init(int n_sem, unsigned int value){
@@ -256,4 +256,19 @@ int strlen(char *a)
 		i++;
 
 	return i;
+}
+
+void *sbrk(int increment) {
+	volatile int ret;
+	__asm__ volatile(
+		"int $0x80;"
+		: "=a"(ret) //output in ret
+		: "a"(6), "b"(increment)
+		:);
+	if (ret >= 0){
+		return ret;
+	}else{
+		errno = -ret;
+		return -1;
+	}
 }

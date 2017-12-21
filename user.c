@@ -134,9 +134,9 @@ int __attribute__ ((__section__(".text.main")))
 	//test fork
 	// test_fork();
 
-	// runjp_rank(0,9);
+	runjp_rank(7,10);
 	// runjp();
-	test_read();
+	// test_read();
 	// write(1,"hola",4);
 	// test_sem();
 	// test_clone();
