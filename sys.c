@@ -361,16 +361,16 @@ int sys_read_keyboard(char* buff, int count){
 
   while(tmp_count > 0){
     if(tmp_count <= global_buff.size){
-      err = copy_to_user(&global_buff, buff, count);
-      if(err < 0 ) return err;
-      sys_write_console(buff,count);
-      /*int i = 0;
+      // err = copy_to_user(&global_buff, buff, count);
+      // if(err < 0 ) return err;
+      // sys_write_console(buff,count);
+      int i = 0;
       while(i<count){
         if(!cb_isEmpty(&global_buff)){
           buff[i] = cb_pop(&global_buff);
           i++;
         }
-      }*/
+      }
       read_count = 0;
       tmp_count = 0;
     }else if(global_buff.size == BUFF_SIZE-1){
@@ -402,7 +402,7 @@ void * sys_sbrk(int increment) {
     int fr = alloc_frame();
     if (fr < 0) return fr;
     set_ss_pag(get_PT(current()),INIT_HEAP/PAGE_SIZE,fr);
-    current()->heap_init = heap_init;
+    current()->heap_init = INIT_HEAP;
     current()->numPagHeap = 1;
   }
 
@@ -431,19 +431,19 @@ void * sys_sbrk(int increment) {
     	}
     }
     return old;
-  else if (current()->heap_bytes + increment < 0) {
+  } else if (current()->heap_bytes + increment < 0) {
     current()->heap_bytes = 0;
     while((current()->numPagHeap) > 0) {
     	free_frame(get_frame(get_PT(current()),INIT_HEAP/PAGE_SIZE + current()->numPagHeap -1 ));
     	del_ss_pag(get_PT(current()), ((INIT_HEAP/PAGE_SIZE) + current()->numPagHeap) - 1);
     	current()->numPagHeap--;
     }
-    return current()->heap_start;
+    return current()->heap_init;
   } else {
     current()->heap_bytes += increment;
   	while((current()->numPagHeap*PAGE_SIZE)-current()->heap_bytes > PAGE_SIZE) {
-  		free_frame(get_frame(get_PT(current()), HEAP_START/PAGE_SIZE + current()->numPagHeap -1));
-  		del_ss_pag(get_PT(current()), ((HEAP_START/PAGE_SIZE) + current()->numPagHeap) - 1);
+  		free_frame(get_frame(get_PT(current()), INIT_HEAP/PAGE_SIZE + current()->numPagHeap -1));
+  		del_ss_pag(get_PT(current()), ((INIT_HEAP/PAGE_SIZE) + current()->numPagHeap) - 1);
   		current()->numPagHeap--;
   	}
     return current()->heap_init + current()->heap_bytes;
