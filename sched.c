@@ -16,13 +16,13 @@ struct semaphore semaphore_list[NR_SEMAPHORES];
 
 #define DEFAULT_QUANTUM 10
 
-//TODO: 
-// - hi ha warnings 
+//TODO:
+// - hi ha warnings
 // - no passa tests clone: -->FET
-// - sys_clone: la funció a executar pot estar en algun lloc de l'espai d'adreces, no nomes a dades 
+// - sys_clone: la funció a executar pot estar en algun lloc de l'espai d'adreces, no nomes a dades
 // - sys_clone: ha de retornar un 'int' per poder retornar alguna cosa (eliminant warnings aixo no hauria passat) --> FET
 // - allocate_DIR: hauria de retornar un error o algo per indicar que no hi ha directoris disponibles --> FET
-// - sem_wait: que passa si es fa un sem_destroy i un sem_init seguits? 
+// - sem_wait: que passa si es fa un sem_destroy i un sem_init seguits?
 // - task_switch: si el proper PCB a executar és un thread del procés actual NO cal canviar l'espai d'adreces -->FET TODO: Verificar linia 210
 
 /**
@@ -120,7 +120,7 @@ void sched_next_rr(){
 	}
 	nou_tku->state = ST_RUN;
 	quantum_restant = get_quantum(nou_tku);
-	nou_tku->stadisticas.remaining_ticks = quantum_restant; 
+	nou_tku->stadisticas.remaining_ticks = quantum_restant;
 
 	unsigned long current_ticks = get_ticks();
 	//actualitzar el old
@@ -132,7 +132,7 @@ void sched_next_rr(){
 	nou_tku->stadisticas.ready_ticks += current_ticks-(nou_tku->stadisticas.elapsed_total_ticks);
 	nou_tku->stadisticas.elapsed_total_ticks = current_ticks;
 
-  	nou_tku->stadisticas.total_trans++;
+  nou_tku->stadisticas.total_trans++;
 
 	task_switch((union task_union *) nou_tku);
 

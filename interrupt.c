@@ -91,14 +91,14 @@ void setIdt()
   /* Program interrups/exception service routines */
   idtR.base  = (DWord)idt;
   idtR.limit = IDT_ENTRIES * sizeof(Gate) - 1;
-  
+
   set_handlers();
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
   setInterruptHandler(32,clock_handler,0);
   setInterruptHandler(33,keyboard_handler,0);
   setTrapHandler(0x80, system_call_handler, 3);
-  
+
   setInterruptHandler(14, page_fault_handler_, 0);
 
   set_idt_reg(&idtR);
@@ -134,7 +134,7 @@ void keyboard_routine(){
   unsigned char num = inb(0x60);
   char mask = 0x80;
   char pressed = num & mask;
-  pressed = pressed >> 7; 
+  pressed = pressed >> 7;
   if(pressed){
     num = num & 0x7F;
     int valNum = (int) num;
@@ -176,5 +176,3 @@ void clock_routine(){
   zeos_show_clock();
   schedule();
 }
-
-

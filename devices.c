@@ -5,7 +5,7 @@
 #include <system.h>
 
 
-// Queue for blocked processes in I/O 
+// Queue for blocked processes in I/O
 struct list_head keyboardqueue;
 
 struct circular_buff global_buff;
@@ -46,26 +46,13 @@ int cb_isFull(struct circular_buff * cb){
 //   }
 // }
 
-char* cb_getChars(struct circular_buff * cb, int nb_char){
-  char array[nb_char];
-  int i = 0;
-  while(i<nb_char){
-    array[i] = cb->buff[cb->output];
-    cb->output++;
-    cb->output = cb->output%BUFF_SIZE;
-    i++;
-  }
-  cb->size = cb->size - nb_char;
-  return array;
-}
-
 int sys_write_console(char *buffer,int size)
 {
   int i;
-  
+
   for (i=0; i<size; i++)
     printc(buffer[i]);
-  
+
   return size;
 }
 

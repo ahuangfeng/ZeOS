@@ -112,7 +112,7 @@ int sys_fork()
   int adress_disponible =  NUM_PAG_KERNEL + NUM_PAG_CODE + NUM_PAG_DATA + currentPCB->numPagHeap;
   for(pag = 0 ; pag <NUM_PAG_DATA + currentPCB->numPagHeap; pag++ ){
     //copiamos el hijo
-    set_ss_pag(fill_PT,NUM_PAG_KERNEL + NUM_PAG_CODE+pag,frames[pag]);    
+    set_ss_pag(fill_PT,NUM_PAG_KERNEL + NUM_PAG_CODE+pag,frames[pag]);
     set_ss_pag(pare_PT,adress_disponible+pag,frames[pag]); //PAGE_SIZE = 0x1000 = 1000 0000 0000
     copy_data((void *) ((NUM_PAG_KERNEL + NUM_PAG_CODE+pag) << 12),(void *) ((adress_disponible+pag)<<12),PAGE_SIZE);
     del_ss_pag(pare_PT,adress_disponible+pag);
@@ -358,20 +358,37 @@ int sys_read_keyboard(char* buff, int count){
     // list_add_tail(current(),&keyboardqueue);
     sched_next_rr();
   }
-
+  sys_write_console("-H-", 3);
   while(tmp_count > 0){
-
     if(tmp_count <= global_buff.size){
-      err = copy_to_user(cb_getChars(&global_buff, tmp_count), buff, tmp_count);
+      char array[tmp_count];
+      int i = 0;
+      while(i<tmp_count){
+        array[i] = global_buff.buff[global_buff.output];
+        global_buff.output++;
+        global_buff.output = global_buff.output%BUFF_SIZE;
+        i++;
+      }
+      global_buff.size = global_buff.size - tmp_count;
+
+      err = copy_to_user(array, buff, tmp_count);
       if(err < 0 ) return err;
-      // sys_write_console(buff,count);
       read_count = 0;
       tmp_count = 0;
       writted = tmp_count;
     }else if(global_buff.size == BUFF_SIZE){
-      err = copy_to_user(cb_getChars(&global_buff, BUFF_SIZE), buff+writted, BUFF_SIZE);
+      char array[BUFF_SIZE];
+      int i = 0;
+      while(i<BUFF_SIZE){
+        array[i] = global_buff.buff[global_buff.output];
+        global_buff.output++;
+        global_buff.output = global_buff.output%BUFF_SIZE;
+        i++;
+      }
+      global_buff.size = global_buff.size - BUFF_SIZE;
+
+      err = copy_to_user(array, buff+writted, BUFF_SIZE);
       if(err < 0 ) return err;
-      // sys_write_console(buff,count);
       writted = writted + BUFF_SIZE;
       read_count = read_count - BUFF_SIZE;
       tmp_count -= BUFF_SIZE;
