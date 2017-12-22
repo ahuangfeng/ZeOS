@@ -70,14 +70,14 @@ int sys_fork()
 
   //d
   //Inicializacion de paginas en padre
-  int frames[NUM_PAG_DATA];
+  int frames[NUM_PAG_DATA+currentPCB->numPagHeap];
   int pag;
   int new_ph_pag;
 
   page_table_entry * pare_PT =  get_PT(currentPCB); //pare
   page_table_entry * dir_current = get_DIR(currentPCB);
   /* frames for DATA */
-  for (pag=0;pag<NUM_PAG_DATA;pag++){
+  for (pag=0;pag<NUM_PAG_DATA+currentPCB->numPagHeap;pag++){
     new_ph_pag=alloc_frame();
     if(new_ph_pag < 0){
       //si error, buidem pagines que em agafat
@@ -106,18 +106,15 @@ int sys_fork()
 
   // printk("6");
   /* DATA User */
-  //e1-B
-  for (pag=0;pag<NUM_PAG_DATA;pag++){
-    set_ss_pag(fill_PT,PAG_LOG_INIT_DATA+pag,frames[pag]);
-  }
 
-  // printk("7");
   // establecer espacio en padre para despues linkear a hijo
   //e-2
-  int adress_disponible = PAG_LOG_INIT_DATA + NUM_PAG_DATA;
-  for(pag = 0 ; pag <NUM_PAG_DATA; pag++ ){
+  int adress_disponible =  NUM_PAG_KERNEL + NUM_PAG_CODE + NUM_PAG_DATA + currentPCB->numPagHeap;
+  for(pag = 0 ; pag <NUM_PAG_DATA + currentPCB->numPagHeap; pag++ ){
+    //copiamos el hijo
+    set_ss_pag(fill_PT,NUM_PAG_KERNEL + NUM_PAG_CODE+pag,frames[pag]);    
     set_ss_pag(pare_PT,adress_disponible+pag,frames[pag]); //PAGE_SIZE = 0x1000 = 1000 0000 0000
-    copy_data((void *) ((PAG_LOG_INIT_DATA+pag) << 12),(void *) ((adress_disponible+pag)<<12),PAGE_SIZE);
+    copy_data((void *) ((NUM_PAG_KERNEL + NUM_PAG_CODE+pag) << 12),(void *) ((adress_disponible+pag)<<12),PAGE_SIZE);
     del_ss_pag(pare_PT,adress_disponible+pag);
   }
   set_cr3(dir_current);
@@ -343,8 +340,7 @@ int sys_read(int fd, char* buff, int count){
   if (count == 0) return 0; //es un valor válido pero no haremos nada
   if (!access_ok(VERIFY_READ, buff, count)) return -EFAULT;
 
-  int check = check_fd(fd,LECTURA);
-  if(check != 0) return check;
+  if(check_fd(fd,LECTURA) != 0) return -EBADF;
 
   int res = sys_read_keyboard(buff, count);
 
@@ -353,40 +349,34 @@ int sys_read(int fd, char* buff, int count){
 
 int sys_read_keyboard(char* buff, int count){
   int err;
+
+  int writted = 0;
   int tmp_count = count;
+  read_count = count;
   if(!list_empty(&keyboardqueue)){
-    block(current(),TAIL);
+    // block(current(),TAIL);
+    list_add_tail(current(),&keyboardqueue);
     sched_next_rr();
   }
 
   while(tmp_count > 0){
     if(tmp_count <= global_buff.size){
-      // err = copy_to_user(&global_buff, buff, count);
-      // if(err < 0 ) return err;
-      // sys_write_console(buff,count);
-      int i = 0;
-      while(i<count){
-        if(!cb_isEmpty(&global_buff)){
-          buff[i] = cb_pop(&global_buff);
-          i++;
-        }
-      }
+      err = copy_to_user(cb_getChars(&global_buff, tmp_count), buff, tmp_count);
+      if(err < 0 ) return err;
+      sys_write_console(buff,count);
       read_count = 0;
       tmp_count = 0;
-    }else if(global_buff.size == BUFF_SIZE-1){
-      int i = 0;
-      while(i < BUFF_SIZE){
-        if(!cb_isEmpty(&global_buff)){
-          buff[i] = cb_pop(&global_buff);
-          i++;
-        }
-      }
-      read_count = count - BUFF_SIZE;
+      writted = tmp_count;
+    }else if(global_buff.size == BUFF_SIZE){
+      err = copy_to_user(cb_getChars(&global_buff, BUFF_SIZE), buff+writted, BUFF_SIZE);
+      if(err < 0 ) return err;
+      sys_write_console(buff,count);
+      writted = writted + BUFF_SIZE;
+      read_count = read_count - BUFF_SIZE;
       tmp_count -= BUFF_SIZE;
       block(current(),HEAD);
       sched_next_rr();
     }else{
-      read_count = count;
       block(current(),HEAD);
       sched_next_rr();
     }
@@ -396,7 +386,7 @@ int sys_read_keyboard(char* buff, int count){
 }
 
 void * sys_sbrk(int increment) {
-  int INIT_HEAP = PAG_LOG_INIT_DATA + NUM_PAG_DATA*PAGE_SIZE;
+  int INIT_HEAP = (NUM_PAG_KERNEL + NUM_PAG_CODE + NUM_PAG_DATA)*PAGE_SIZE;
 
   if (current()->heap_init == NULL) {
     int fr = alloc_frame();

@@ -12,21 +12,22 @@ struct circular_buff global_buff;
 
 void cb_init(struct circular_buff *cb){
   cb->size = 0;
+  cb->input = -1;
 }
 
-int cb_isEmpty(struct circular_buff *cb){
-  if(cb->size == 0){
-    return 1;
-  }else{
-    return 0;
-  }
-}
+// int cb_isEmpty(struct circular_buff *cb){
+//   if(cb->size == 0){
+//     return 1;
+//   }else{
+//     return 0;
+//   }
+// }
 
 void cb_push(struct circular_buff * cb, char c){
-  if(cb->size < BUFF_SIZE){
-    cb->buff[cb->size] = c;
-    cb->size++;
-  }
+  cb->input++;
+  cb->input = cb->input%BUFF_SIZE;
+  cb->buff[cb->input] = c;
+  if (cb->size < BUFF_SIZE) cb->size++;
 }
 
 int cb_isFull(struct circular_buff * cb){
@@ -37,21 +38,25 @@ int cb_isFull(struct circular_buff * cb){
   }
 }
 
-int cb_hasEnough(struct circular_buff * cb, int nb){
-  if(cb->size >= nb){
-    return 1;
-  }else{
-    return 0;
-  }
-}
+// int cb_hasEnough(struct circular_buff * cb, int nb){
+//   if(cb->size >= nb){
+//     return 1;
+//   }else{
+//     return 0;
+//   }
+// }
 
-char cb_pop(struct circular_buff * cb){
-  if(cb->size > 0){
-    //TODO: y que devuelve aqui?
-  }else {
-    cb->size-=1;
-    return cb->buff[cb->size];
+char* cb_getChars(struct circular_buff * cb, int nb_char){
+  char array[nb_char];
+  int i = 0;
+  while(i<nb_char){
+    array[i] = cb->buff[cb->output];
+    cb->output++;
+    cb->output = cb->output%BUFF_SIZE;
+    i++;
   }
+  cb->size = cb->size - nb_char;
+  return array;
 }
 
 int sys_write_console(char *buffer,int size)
@@ -83,6 +88,8 @@ void block(struct task_struct * process, int head){
 
 void unblock(){
   struct list_head* l_head = list_first(&keyboardqueue);
+  struct task_struct * tsk = list_head_to_task_struct(l_head);
+  tsk->state = ST_READY;
   list_del(l_head);
   list_add(l_head,&readyqueue);
   sched_next_rr();

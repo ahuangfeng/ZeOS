@@ -113,7 +113,7 @@ void page_fault_routine_bis(){
   // // int stk = tu->stack[pageFault];
   // char ss[100];
   // itoa(nbError,ss);
-  // printk("Page fault at ");
+  printk("Page fault at ");
   // printk(ss);
 }
 

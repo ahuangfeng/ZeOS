@@ -12,7 +12,9 @@ int sys_write_console(char *buffer,int size);
 struct list_head keyboardqueue;
 struct circular_buff {
   char buff[BUFF_SIZE];
-  int size;
+  int size; //caracteres en buffer
+  int input; // puntero de escritura
+  int output; 
 };
 
 struct circular_buff global_buff;

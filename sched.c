@@ -187,17 +187,15 @@ void init_idle (void)
 void task_switch(union task_union * new){
 	// printk("task swiitch\n");
 	__asm__ __volatile__(
-		"pushl %%esi;"
-		"pushl %%edi;"
-		"pushl %%ebx;"
-		// "pushl %%eax;"
-		"call inner_task_switch;"
-		// "popl %%eax;"
-		"popl %%ebx;"
-		"popl %%edi;"
-		"popl %%esi;"
-		: /* no output */
-		: "a"(new)
+		"pushl %esi;"
+		"pushl %edi;"
+		"pushl %ebx;"
+	);
+	inner_task_switch(new);
+	__asm__ __volatile__(
+		"popl %ebx;"
+		"popl %edi;"
+		"popl %esi;"
 	);
 	// printk("task swiitch2\n");
 }
@@ -265,6 +263,7 @@ void init_sched(){
 	INIT_LIST_HEAD(&freequeue);
 	INIT_LIST_HEAD(&keyboardqueue);
 	cb_init(&global_buff);
+
 	//inicializando las referencias de directorios
 	for(int i = 0; i<NR_TASKS ; i++){
 		directories_refs[i] = 0;
@@ -278,6 +277,7 @@ void init_sched(){
 
 	for(int i = 0; i<NR_TASKS; i++){
 		list_add_tail(&task[i].task.list,&freequeue);
+		task[i].task.heap_bytes = 0;
 		init_stats(&task[i].task);
 	}
 	//iniciar el quantum inicial

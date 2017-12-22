@@ -119,8 +119,8 @@ void test_sem(){
 
 void test_read(){
 	char buff[100];
-	read(0, buff, 5);
-	write(1,buff,5);
+	read(0, buff, 3);
+	write(1,buff,3);
 }
 
 int __attribute__ ((__section__(".text.main")))
@@ -136,6 +136,11 @@ int __attribute__ ((__section__(".text.main")))
 
 	// runjp_rank(7,10);
 	runjp();
+	// void * sb = sbrk(10);
+	// int * aa = (int) sb;
+	// *aa = 2020;
+	// sbrk(-2);
+	// sbrk(-10);
 	// test_read();
 	// write(1,"hola",4);
 	// test_sem();
