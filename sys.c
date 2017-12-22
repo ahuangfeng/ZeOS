@@ -399,7 +399,6 @@ int sys_read_keyboard(char* buff, int count){
       sched_next_rr();
     }
   }
-
   return count;
 }
 

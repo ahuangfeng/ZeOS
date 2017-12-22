@@ -113,7 +113,7 @@ void page_fault_routine_bis(){
   // // int stk = tu->stack[pageFault];
   // char ss[100];
   // itoa(nbError,ss);
-  printk("Page fault at ");
+  printk("Page fault \n");
   // printk(ss);
 }
 
@@ -151,18 +151,6 @@ void keyboard_routine(){
     // printk(buf);
     cb_push(&global_buff, c);
     if(!list_empty(&keyboardqueue)){
-      // struct list_head * lh = list_first(&keyboardqueue);
-      // struct task_struct *tsk = list_head_to_task_struct(lh);
-
-      //  int abb = read_count;
-      //  int baa = global_buff.size;
-      // char buf[BUFF_SIZE];
-      // itoa(tsk->read_count,buf);
-      // printk(buf);
-      // printk("-");
-      // char buf2[BUFF_SIZE];
-      // itoa(global_buff.size,buf2);
-      // printk(buf2);
       if((cb_isFull(&global_buff)) || (read_count <= global_buff.size)){
         unblock();
         // printk("Unblock");

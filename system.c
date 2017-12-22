@@ -1,5 +1,5 @@
 /*
- * system.c - 
+ * system.c -
  */
 
 #include <segment.h>
@@ -42,7 +42,7 @@ int read_count;
  */
 
 /*
- * This function MUST be 'inline' because it modifies the %esp 
+ * This function MUST be 'inline' because it modifies the %esp
  */
 inline void set_seg_regs(Word data_sel, Word stack_sel, DWord esp)
 {
@@ -94,7 +94,7 @@ int __attribute__((__section__(".text.main")))
 
   // monoprocess_init_addr_space(); /* TO BE DELETED WHEN ADDED THE PROCESS MANAGEMENT CODE TO BECOME MULTIPROCESS */
 
-  
+
 	ultimPID = 0;
   /* Initialize Scheduling */
   init_sched();
@@ -113,7 +113,7 @@ int __attribute__((__section__(".text.main")))
   printk("Entering user mode...");
 
   zeos_init_auxjp();
-  
+
   enable_int();
   /*
    * We return from a 'theorical' call to a 'call gate' to reduce our privileges
@@ -124,5 +124,3 @@ int __attribute__((__section__(".text.main")))
   /* The execution never arrives to this point */
   return 0;
 }
-
-

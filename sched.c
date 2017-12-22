@@ -207,7 +207,6 @@ void inner_task_switch(union task_union * new){
 	if(new->task.dir_pages_baseAddr != oldtsk->dir_pages_baseAddr){
 		set_cr3(get_DIR((struct task_struct *) new));
 	}
-
 	struct task_struct * newtsk = (struct task_struct *) new;
 
 	// void * oldEsp = old->proces_esp;
@@ -226,14 +225,13 @@ void inner_task_switch(union task_union * new){
 		:
 		: "g"(newtsk->proces_esp)
 	);
-
 	__asm__ __volatile__(
 		"popl %%ebp;"
 		"ret;"
 		:
 		:
 	);
-
+	printk("Finisheeed;");
 }
 
 void init_task1(void)
