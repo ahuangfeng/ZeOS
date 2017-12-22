@@ -23,7 +23,7 @@ void cb_init(struct circular_buff *cb);
 void cb_push(struct circular_buff * cb, char c);
 char cb_pop(struct circular_buff * cb);
 
-void block(struct task_struct * process, int head);
+void block(struct list_head * process_head, int head);
 void unblock();
 
 #endif /* DEVICES_H__*/

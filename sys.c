@@ -317,7 +317,6 @@ int sys_write(int fd, char * buffer, int size) {
     return -EINVAL; // Invalid Argument
   }
 
-
   while(size>TAMANYBUFF){  // TAMANYBUFF = 4
     copy_from_user(buffer, buff, TAMANYBUFF);
     sys_write_console(buff, TAMANYBUFF);
@@ -353,31 +352,33 @@ int sys_read_keyboard(char* buff, int count){
   int writted = 0;
   int tmp_count = count;
   read_count = count;
+  struct task_struct * tsk = current();
   if(!list_empty(&keyboardqueue)){
-    // block(current(),TAIL);
-    list_add_tail(current(),&keyboardqueue);
+    block(&(tsk->list),TAIL);
+    // list_add_tail(current(),&keyboardqueue);
     sched_next_rr();
   }
 
   while(tmp_count > 0){
+
     if(tmp_count <= global_buff.size){
       err = copy_to_user(cb_getChars(&global_buff, tmp_count), buff, tmp_count);
       if(err < 0 ) return err;
-      sys_write_console(buff,count);
+      // sys_write_console(buff,count);
       read_count = 0;
       tmp_count = 0;
       writted = tmp_count;
     }else if(global_buff.size == BUFF_SIZE){
       err = copy_to_user(cb_getChars(&global_buff, BUFF_SIZE), buff+writted, BUFF_SIZE);
       if(err < 0 ) return err;
-      sys_write_console(buff,count);
+      // sys_write_console(buff,count);
       writted = writted + BUFF_SIZE;
       read_count = read_count - BUFF_SIZE;
       tmp_count -= BUFF_SIZE;
-      block(current(),HEAD);
+      block(&(tsk->list),HEAD);
       sched_next_rr();
     }else{
-      block(current(),HEAD);
+      block(&(tsk->list),HEAD);
       sched_next_rr();
     }
   }

@@ -123,6 +123,14 @@ void test_read(){
 	write(1,buff,3);
 }
 
+void test_sbrk(){
+	void * sb = sbrk(10);
+	int * aa = (int) sb;
+	*aa = 2020;
+	sbrk(-2);
+	sbrk(-10);
+}
+
 int __attribute__ ((__section__(".text.main")))
   main(void)
 {
@@ -135,13 +143,9 @@ int __attribute__ ((__section__(".text.main")))
 	// test_fork();
 
 	// runjp_rank(7,10);
-	runjp();
-	// void * sb = sbrk(10);
-	// int * aa = (int) sb;
-	// *aa = 2020;
-	// sbrk(-2);
-	// sbrk(-10);
-	// test_read();
+	// runjp();
+	// test_sbrk();
+	test_read();
 	// write(1,"hola",4);
 	// test_sem();
 	// test_clone();

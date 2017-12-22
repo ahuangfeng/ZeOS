@@ -69,10 +69,10 @@ int sys_write_console(char *buffer,int size)
   return size;
 }
 
-void block(struct task_struct * process, int head){
-  // process->read_count = read_count;
+void block(struct list_head * process_head, int head){
+  // process_head->read_count = read_count;
   // char bu[10];
-  // itoa(process->read_count,bu);
+  // itoa(process_head->read_count,bu);
   // printk(bu);
   // printk("-");
   // char bu2[10];
@@ -80,9 +80,9 @@ void block(struct task_struct * process, int head){
   // printk(bu2);
   // printk("F");
   if(head == 1){
-    list_add(process,&keyboardqueue);
+    list_add(process_head,&keyboardqueue);
   }else {
-    list_add_tail(process,&keyboardqueue);
+    list_add_tail(process_head,&keyboardqueue);
   }
 }
 
