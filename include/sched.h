@@ -27,6 +27,7 @@ struct task_struct {
   int quantum;
   enum state_t state;
   struct stats stadisticas;
+  int read_count;
   void* heap_init;
   int heap_bytes;
   int numPagHeap;

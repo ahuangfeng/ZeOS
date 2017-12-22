@@ -59,6 +59,16 @@ char* cb_getChars(struct circular_buff * cb, int nb_char){
   return array;
 }
 
+char cb_getChar(struct circular_buff *cb){
+  cb->output++;
+  cb->output = cb->output%BUFF_SIZE;
+  return cb->buff[cb->output-1];
+}
+
+// void cb_copy(struct circular_buff * cb, char * buff,int tmp_count){
+//   copy_to_user(cb->buff[cb->output], buff, tmp_count);
+// }
+
 int sys_write_console(char *buffer,int size)
 {
   int i;

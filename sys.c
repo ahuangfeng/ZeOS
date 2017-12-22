@@ -349,31 +349,34 @@ int sys_read(int fd, char* buff, int count){
 int sys_read_keyboard(char* buff, int count){
   int err;
 
-  int writted = 0;
+  int written = 0;
   int tmp_count = count;
-  read_count = count;
   struct task_struct * tsk = current();
+  tsk->read_count = count;
   if(!list_empty(&keyboardqueue)){
     block(&(tsk->list),TAIL);
     // list_add_tail(current(),&keyboardqueue);
     sched_next_rr();
   }
-
   while(tmp_count > 0){
-
     if(tmp_count <= global_buff.size){
-      err = copy_to_user(cb_getChars(&global_buff, tmp_count), buff, tmp_count);
+      // cb_getChars(&global_buff, tmp_count);
+      // err = cb_copy(&global_buff, buff, tmp_count);
+      err = copy_to_user(&global_buff.buff[global_buff.output], buff, tmp_count);
       if(err < 0 ) return err;
+      // copy_data(cb_getChars(&global_buff, tmp_count),buff,  tmp_count);
       // sys_write_console(buff,count);
-      read_count = 0;
+      tsk->read_count = 0;
       tmp_count = 0;
-      writted = tmp_count;
+      written = tmp_count;
     }else if(global_buff.size == BUFF_SIZE){
-      err = copy_to_user(cb_getChars(&global_buff, BUFF_SIZE), buff+writted, BUFF_SIZE);
+      err = copy_to_user(&global_buff.buff[global_buff.output], buff+written, BUFF_SIZE);      
+      // err = copy_to_user(cb_getChars(&global_buff, BUFF_SIZE), buff+(written), BUFF_SIZE);
       if(err < 0 ) return err;
+      // copy_data(cb_getChars(&global_buff, BUFF_SIZE),buff+written,  BUFF_SIZE);
       // sys_write_console(buff,count);
-      writted = writted + BUFF_SIZE;
-      read_count = read_count - BUFF_SIZE;
+      written = written + BUFF_SIZE;
+      tsk->read_count = tsk->read_count - BUFF_SIZE;
       tmp_count -= BUFF_SIZE;
       block(&(tsk->list),HEAD);
       sched_next_rr();
@@ -382,7 +385,7 @@ int sys_read_keyboard(char* buff, int count){
       sched_next_rr();
     }
   }
-
+  printk("Returning count");
   return count;
 }
 

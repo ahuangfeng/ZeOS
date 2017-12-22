@@ -22,7 +22,7 @@ unsigned int *p_usr_size = (unsigned int *) KERNEL_START+1;
 unsigned int *p_rdtr = (unsigned int *) KERNEL_START+2;
 long long int zeos_ticks;
 
-int read_count;
+// int read_count;
 
 
 /************************/

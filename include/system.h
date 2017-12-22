@@ -10,7 +10,7 @@
 
 extern TSS         tss;
 extern Descriptor* gdt;
-extern int read_count;
+// extern int read_count;
 
 
 #endif  /* __SYSTEM_H__ */
